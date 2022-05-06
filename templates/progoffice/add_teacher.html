@@ -30,7 +30,7 @@
           }
     </style>
 
-    <title>Complete Signup Process</title>
+    <title>Prog Office - Add Teacher</title>
   </head>
   <body>
     <section class="vh-100 bg-image" style="background-image: url('https://mdbcdn.b-cdn.net/img/Photos/new-templates/search-box/img4.webp');">
@@ -40,7 +40,7 @@
               <div class="col-12 col-md-9 col-lg-7 col-xl-6">
                 <div class="card" style="border-radius: 15px;">
                   <div class="card-body p-5">
-                    <h2 class="text-uppercase text-center mb-5">Complete the Registration Process</h2>
+                    <h2 class="text-uppercase text-center mb-5">Register Teacher</h2>
 
                     {% for message in messages %}
                       <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
@@ -49,56 +49,42 @@
                       </div>
                     {% endfor %}
 
-                    <form method="post" action={% url 'complete_signup'%} enctype="multipart/form-data">
+                    <form method="post" action={% url 'add_teacher' %} enctype="multipart/form-data">
                       {% csrf_token %} 
 
                       <div class="form-outline mb-4">
-                        <div id="emailDiv" class="form-control form-control-lg">{{ t_user.email }}</div>
-                        <label class="form-label" for="emailDiv">Email</label>
-                      </div>
-                      <div class="form-outline mb-4">
-                        <div id="usernameDiv" class="form-control form-control-lg">{{ t_user.username }}</div>
-                        <label class="form-label" for="emailDiv">Username</label>
+                        <input Required type="email" id="email" name="email" class="form-control form-control-lg" required/>
+                        <label class="form-label" for="email">Email</label>
                       </div>
 
-                      <input hidden id="email" name="email" value="{{ t_user.email }}">
+                      <div class="form-outline mb-4">
+                        <input Required type="text" id="username" name="username" class="form-control form-control-lg" required/>
+                        <label class="form-label" for="username">Username</label>
+                      </div>
 
                       <div class="form-outline mb-4">
                         <div class="form-control form-control-lg">{{ form.teacher_name }}</div>
-                        {% comment %} <input Required value="{{ teacher.teacher_name }}" type="text" id="name" name="name" class="form-control form-control-lg" required/> {% endcomment %}
                         <label class="form-label" for="name">Name</label>
                       </div>
 
                       <div class="form-outline mb-4">
                         <div class="form-control form-control-lg">{{ form.teacher_designation }}</div>
                         <label class="form-label">Designation</label>
-                        {% comment %} <select value="{{ teacher.teacher_designation }}" name="desig" class="form-select form-select-sm mb-3" aria-label="designation" required>
-                          {% if teacher.teacher_designation == 'P' %}
-                          <option>Select your designation</option>
-                          <option value="P" selected>Professor</option>
-                          <option value="AP">Asst. Professor</option>
-                          {% else %}
-                          <option>Select your designation</option>
-                          <option value="P">Professor</option>
-                          <option value="AP" selected>Asst. Professor</option>
-                          {% endif %}
-                        </select> {% endcomment %}
                       </div>
 
                       <div class="form-outline mb-4">
                         <div class="form-control form-control-lg">{{ form.teacher_status }}</div>
                         <label class="form-label">Status</label>
-                        {% comment %} <select name="status" class="form-select form-select-sm mb-3" aria-label="Status" required>
-                          {% if teacher.teacher_status == 'P' %}
-                          <option>Select your Status</option>
-                          <option value="P" selected>Permanent</option>
-                          <option value="V">Visiting</option>
-                          {% else %}
-                          <option>Select your Status</option>
-                          <option value="P">Permanent</option>
-                          <option value="V" selected>Visiting</option>
-                          {% endif %}
-                        </select> {% endcomment %}
+                      </div>
+
+                      <div class="form-outline mb-4">
+                        <input Required type="password" id="password" name="pass" class="form-control form-control-lg" required/>
+                        <label class="form-label" for="password">Password</label>
+                      </div>
+      
+                      <div class="form-outline mb-4">
+                        <input Required type="password" id="password1" name="pass1" class="form-control form-control-lg" required/>
+                        <label class="form-label" for="password1">Repeat password</label>
                       </div>
 
                       <div class="form-outline mb-4">

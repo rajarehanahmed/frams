@@ -13,11 +13,14 @@ def home(request):
 
 
 def profile(request):
-    teacher = Teacher.objects.get(user_id=request.user)
-    context = {
-        'teacher_name':  teacher.teacher_name,
-        'teacher_designation': teacher.teacher_designation,
-        'teacher_status': teacher.teacher_status,
-        'created_at': teacher.created_at
-    }
-    return render(request, 'teacher/profile.html', context)
+    if request.user.is_authenticated:
+        teacher = Teacher.objects.get(user_id=request.user)
+        context = {
+            'teacher_name':  teacher.teacher_name,
+            'teacher_designation': teacher.teacher_designation,
+            'teacher_status': teacher.teacher_status,
+            'created_at': teacher.created_at
+        }
+        return render(request, 'teacher/profile.html', context)
+    else:
+        return redirect('index')
