@@ -1,4 +1,4 @@
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseNotAllowed, HttpResponseServerError
 from django.shortcuts import redirect, render
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
@@ -140,15 +140,34 @@ def pendingRegistrations(request):
     else:
         return redirect('index')
 
+
+def deletePendingReg(request):
+    if request.user.is_authenticated:
+        if request.user.is_superuser and request.method == 'POST':
+            email = request.POST['email']
+            try:
+                user = User.objects.get(email=email)
+            except(User.DoesNotExist):
+                messages.error(request, 'User does not exist!')
+                return redirect('pending_registrations')
+            else:
+                user.delete()
+                messages.success(request, 'Registration Deleted Successfully')
+                return redirect('pending_registrations')
+        else:
+            return HttpResponse('404 - Page Not Found')
+    else:
+        return redirect('index')
+
 def completeSignup(request):
     if request.user.is_authenticated:
-        if request.method == "POST":
+        if request.user.is_superuser and request.method == 'POST':
             email = request.POST['email']
             try: 
                 user = User.objects.get(email=email)
             except(User.DoesNotExist):
                 messages.error(request, 'Email does not exist')
-                return redirect('pendingRegistrations')
+                return redirect('pending_registrations')
             else:
                 teacher = Teacher.objects.get(user_id=user)
                 form = TeacherForm(request.POST, request.FILES, instance=teacher)
@@ -174,9 +193,10 @@ def completeSignup(request):
                     email.send()
 
                     messages.success(request, 'Registration Completed Successfully, Please Ask the Teacher to Verify their Email. Thank you!')
-                    return redirect('pendingRegistrations')
-                messages.error(request, 'Errors in form data')
-                return redirect('pendingRegistrations')
+                    return redirect('pending_registrations')
+                else:
+                    messages.error(request, 'Errors in form data')
+                    return redirect('pending_registrations')
         else:
             return HttpResponse('404 - Page Not Found')
     else:

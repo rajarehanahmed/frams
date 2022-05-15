@@ -26,8 +26,14 @@
               <a class="nav-link" href="/admin">Admin panel</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link active" href="/pendingRegistrations">Pending Registrations</a>
-              </li>
+                <a class="nav-link active" href={% url 'pending_registrations' %}>Pending Registrations</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href={% url 'add_teacher' %}>Add Teacher</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href={% url 'add_student' %}>Add Student</a>
+            </li>
           </ul>
           
           <ul class="navbar-nav ml-auto">
@@ -53,7 +59,17 @@
 
     {% for reg in pendingRegs %}
       <div class="container my-4">
-          Name: {{ reg.teacher_id.teacher_name }} | Email: {{ reg.teacher_id.user_id.email }} | Created: {{ reg.teacher_id.created_at }} <form style="display: inline;" method="post" action="/pendingRegistrations/">{% csrf_token %}<input type="hidden" name="email" value="{{ reg.teacher_id.user_id.email }}"><input type="submit" value="View" class="mx-2 btn-sm btn-primary"></form>
+          Name: {{ reg.teacher_id.teacher_name }} | Email: {{ reg.teacher_id.user_id.email }} | Created: {{ reg.teacher_id.created_at }}
+          <form style="display: inline;" method="post" action={% url 'pending_registrations' %}>
+            {% csrf_token %}
+            <input type="hidden" name="email" value="{{ reg.teacher_id.user_id.email }}">
+            <input type="submit" value="View" class="mx-2 btn-sm btn-primary">
+          </form>
+          <form style="display: inline;" method="post" action={% url 'delete_pending_reg' %}>
+            {% csrf_token %}
+            <input type="hidden" name="email" value="{{ reg.teacher_id.user_id.email }}">
+            <input type="submit" value="Delete" class="mx-2 btn-sm btn-danger">
+          </form>
       </div>
     {% endfor %}
 

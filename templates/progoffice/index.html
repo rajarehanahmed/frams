@@ -26,10 +26,13 @@
               <a class="nav-link" href="/admin">Admin panel</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="/pendingRegistrations">Pending Registrations</a>
+              <a class="nav-link" href={% url 'pending_registrations' %}>Pending Registrations</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{% url 'add_teacher' %}">Add Teacher</a>
+              <a class="nav-link" href={% url 'add_teacher' %}>Add Teacher</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href={% url 'add_student' %}>Add Student</a>
             </li>
           </ul>
           

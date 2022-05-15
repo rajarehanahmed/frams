@@ -9,9 +9,13 @@ class Student(models.Model):
     student_name = models.CharField(max_length=50)
     father_name = models.CharField(max_length=50)
     email = models.CharField(max_length=50)
+    img1 = models.ImageField(upload_to='students', default="")
+    img2 = models.ImageField(upload_to='students', default="")
+    img3 = models.ImageField(upload_to='students', default="")
+
 
     def __str__(self):
-        return self.student_name
+        return self.reg_no + ' ' + self.student_name
 
 
 class Course(models.Model):
@@ -73,9 +77,9 @@ class Teacher(models.Model):
     teacher_designation = models.CharField(max_length=2, choices=Teacher_designations)
     teacher_status = models.CharField(max_length=1, choices=Teacher_Statuses)
     created_at = models.DateTimeField(auto_now_add=True)
-    img1 = models.ImageField(upload_to='teacher', default="")
-    img2 = models.ImageField(upload_to='teacher', default="")
-    img3 = models.ImageField(upload_to='teacher', default="")
+    img1 = models.ImageField(upload_to='teachers', default="")
+    img2 = models.ImageField(upload_to='teachers', default="")
+    img3 = models.ImageField(upload_to='teachers', default="")
 
     def __str__(self):
         if self.teacher_status == 'V':
