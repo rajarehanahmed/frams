@@ -89,7 +89,7 @@
                       </div>
                     {% endfor %}
 
-                    {% for field in form %}
+                    {% comment %} {% for field in form %}
                       {% if field.errors %}
                         {% for error in field.errors %}
                           <div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -97,11 +97,13 @@
                             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                           </div>
                         {% endfor %}
-                        {% comment %} <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            <strong>{{field.errors|escape}}!</strong>
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div> {% endcomment %}
                       {% endif %}
+                    {% endfor %} {% endcomment %}
+                    {% for error in form.non_field_errors %}
+                      <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <strong>{{error}}</strong>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                      </div>
                     {% endfor %}
 
                     {% comment %} {% if form.error %}
@@ -124,37 +126,58 @@
 
                       <div class="form-outline mb-4">
                         {{ form.reg_no }}
-                        <label class="form-label" for="name">Reg No.</label>
+                        <label class="form-label is-invalid">Reg No.</label>
+                        <div class="invalid-feedback">
+                          {{ form.reg_no.errors }}
+                        </div>
                       </div>
 
                       <div class="form-outline mb-4">
                         {{ form.student_name }}
-                        <label class="form-label">Student Name</label>
+                        <label class="form-label is-invalid">Student Name</label>
+                        <div class="invalid-feedback">
+                          {{ form.student_name.errors }}
+                        </div>
                       </div>
 
                       <div class="form-outline mb-4">
                         {{ form.father_name }}
-                        <label class="form-label">Father Name</label>
+                        <label class="form-label is-invalid">Father Name</label>
+                        <div class="invalid-feedback">
+                          {{ form.father_name.errors }}
+                        </div>
                       </div>
 
                       <div class="form-outline mb-4">
                         {{ form.email }}
-                        <label class="form-label">Email</label>
+                        <label class="form-label is-invalid">Email</label>
+                        <div class="invalid-feedback">
+                          {{ form.email.errors }}
+                        </div>
                       </div>
 
                       <div class="form-outline mb-4">
-                        <label class="form-label mx-2" for="img1">Image 1</label>
+                        <label class="form-label mx-2 is-invalid" for="img1">Image 1</label>
                         {{ form.img1 }}
+                        <div class="invalid-feedback">
+                          {{ form.img1.errors }}
+                        </div>
                       </div>
 
                       <div class="form-outline mb-4">
-                        <label class="form-label mx-2" for="img1">Image 2</label>
+                        <label class="form-label mx-2 is-invalid" for="img1">Image 2</label>
                         {{ form.img2 }}
+                        <div class="invalid-feedback">
+                          {{ form.img2.errors }}
+                        </div>
                       </div>
 
                       <div class="form-outline mb-4">
-                        <label class="form-label mx-2" for="img1">Image 3</label>
+                        <label class="form-label mx-2 is-invalid" for="img1">Image 3</label>
                         {{ form.img3 }}
+                        <div class="invalid-feedback">
+                          {{ form.img3.errors }}
+                        </div>
                       </div>
           
                       <div class="d-flex justify-content-center">

@@ -87,57 +87,96 @@
                       </div>
                     {% endfor %}
 
+                    {% for error in user_form.non_field_errors %}
+                      <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <strong>{{error}}</strong>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                      </div>
+                    {% endfor %}
+
+                    {% for error in teacher_form.non_field_errors %}
+                      <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <strong>{{error}}</strong>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                      </div>
+                    {% endfor %}
+
                     <form method="post" action={% url 'add_teacher' %} enctype="multipart/form-data">
                       {% csrf_token %} 
 
                       <div class="form-outline mb-4">
-                        <input type="email" id="email" name="email" class="form-control form-control-lg" required/>
-                        <label class="form-label" for="email">Email</label>
+                        {{ user_form.email }}
+                        {% comment %} <input type="email" id="email" name="email" class="{% if user_form.email.errors %}is-invalid{% endif %} form-control form-control-sm" required/> {% endcomment %}
+                        <label class="form-label is-invalid" for="email">Email</label>
+                        <div class="invalid-feedback">
+                          {{ user_form.email.errors }}
+                        </div>
+                      </div>
+                      
+
+                      <div class="form-outline mb-4">
+                        {{ user_form.username }}
+                        {% comment %} <input type="text" id="username" name="username" class="form-control form-control-sm" required/> {% endcomment %}
+                        <label class="form-label is-invalid" for="username">Username</label>
+                        <div class="invalid-feedback">
+                          {{ user_form.username.errors }}
+                        </div>
                       </div>
 
                       <div class="form-outline mb-4">
-                        <input type="text" id="username" name="username" class="form-control form-control-lg" required/>
-                        <label class="form-label" for="username">Username</label>
+                        {{ teacher_form.teacher_name }}
+                        {% comment %} <div class="form-control form-control-lg">{{ form.teacher_name }}</div> {% endcomment %}
+                        <label class="form-label is-invalid" for="name">Name</label>
+                        <div class="invalid-feedback">
+                          {{ teacher_form.teacher_name.errors }}
+                        </div>
                       </div>
 
                       <div class="form-outline mb-4">
-                        <div class="form-control form-control-lg">{{ form.teacher_name }}</div>
-                        <label class="form-label" for="name">Name</label>
+                        {{ teacher_form.teacher_designation }}
+                        {% comment %} <div class="form-control form-control-lg">{{ form.teacher_designation }}</div> {% endcomment %}
+                        <label class="form-labe is-invalidl">Designation</label>
+                        <div class="invalid-feedback">
+                          {{ teacher_form.teacher_designation.errors }}
+                        </div>
                       </div>
 
                       <div class="form-outline mb-4">
-                        <div class="form-control form-control-lg">{{ form.teacher_designation }}</div>
-                        <label class="form-label">Designation</label>
+                        {{ teacher_form.teacher_status }}
+                        {% comment %} <div class="form-control form-control-lg">{{ form.teacher_status }}</div> {% endcomment %}
+                        <label class="form-label is-invalid">Status</label>
+                        <div class="invalid-feedback">
+                          {{ teacher_form.teacher_status.errors }}
+                        </div>
                       </div>
 
                       <div class="form-outline mb-4">
-                        <div class="form-control form-control-lg">{{ form.teacher_status }}</div>
-                        <label class="form-label">Status</label>
+                        {{ user_form.password }}
+                        {% comment %} <input Required type="password" id="password" name="pass" class="form-control form-control-sm" required/> {% endcomment %}
+                        <label class="form-label is-invalid" for="password">Password</label>
+                        <div class="invalid-feedback">
+                          {{ user_form.password.errors }}
+                        </div>
                       </div>
 
                       <div class="form-outline mb-4">
-                        <input Required type="password" id="password" name="pass" class="form-control form-control-lg" required/>
-                        <label class="form-label" for="password">Password</label>
-                      </div>
-      
-                      <div class="form-outline mb-4">
-                        <input Required type="password" id="password1" name="pass1" class="form-control form-control-lg" required/>
+                        <input Required type="password" id="password1" name="pass1" class="form-control form-control-sm" required/>
                         <label class="form-label" for="password1">Repeat password</label>
                       </div>
 
                       <div class="form-outline mb-4">
                         <label class="form-label mx-2" for="img1">Image 1</label>
-                        <div class="form-control form-control-lg">{{ form.img1 }}</div>
+                        <div class="form-control form-control-sm">{{ teacher_form.img1 }}</div>
                       </div>
 
                       <div class="form-outline mb-4">
                         <label class="form-label mx-2" for="img1">Image 2</label>
-                        <div class="form-control form-control-lg">{{ form.img2 }}</div>
+                        <div class="form-control form-control-sm">{{ teacher_form.img2 }}</div>
                       </div>
 
                       <div class="form-outline mb-4">
                         <label class="form-label mx-2" for="img1">Image 3</label>
-                        <div class="form-control form-control-lg">{{ form.img3 }}</div>
+                        <div class="form-control form-control-sm">{{ teacher_form.img3 }}</div>
                       </div>
           
                       <div class="d-flex justify-content-center">

@@ -3,9 +3,54 @@ import email
 from tkinter import Widget
 from django import forms
 from .models import Student, Teacher
+from django.contrib.auth.models import User
+
+
+class UserForm(forms.ModelForm):
+    username = forms.CharField(widget=forms.TextInput(
+        attrs={'class': 'form-control form-control-sm'}
+    ))
+    email = forms.EmailField(widget=forms.EmailInput(
+        attrs={'class': 'form-control form-control-sm'}
+    ))
+    password = forms.CharField(widget=forms.PasswordInput(
+        attrs={'class': 'form-control form-control-sm'}
+    ))
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'password')
+
+    def clean(self):
+        cd = self.cleaned_data
+        if User.objects.filter(username=cd.get('username')).exists():
+            self.add_error('username', 'Username is taken!')
+        if User.objects.filter(email=cd.get('email')).exists():
+            self.add_error('email', 'Email already exists!')
+        return cd
 
 
 class TeacherForm(forms.ModelForm):
+    Teacher_Statuses = (
+        ('V', 'visiting'),
+        ('P', 'permanent'),
+    )
+    Teacher_Designations = (
+        ('P', 'professor'),
+        ('AP', 'asst. professor')
+    )
+    teacher_name = forms.CharField(widget=forms.TextInput(
+        attrs={'class': 'form-control form-control-sm'}
+    ))
+    teacher_designation = forms.CharField(widget=forms.Select(
+        attrs={'class': 'form-select form-control-sm'},
+        choices=Teacher_Designations
+    ))
+    teacher_status = forms.CharField(widget=forms.Select(
+        attrs={'class': 'form-select form-control-sm'},
+        choices=Teacher_Statuses
+    ))
+    
+    
     class Meta:
         model = Teacher
         fields = ('teacher_name', 'teacher_designation', 'teacher_status', 'img1', 'img2', 'img3')
@@ -17,18 +62,45 @@ class TeacherForm(forms.ModelForm):
         # }
 
 
+class PartialTeacherForm(forms.ModelForm):
+    Teacher_Statuses = (
+        ('V', 'visiting'),
+        ('P', 'permanent'),
+    )
+    Teacher_Designations = (
+        ('P', 'professor'),
+        ('AP', 'asst. professor')
+    )
+    teacher_name = forms.CharField(widget=forms.TextInput(
+        attrs={'class': 'form-control form-control-sm'}
+    ))
+    teacher_designation = forms.CharField(widget=forms.Select(
+        attrs={'class': 'form-select form-control-sm'},
+        choices=Teacher_Designations
+    ))
+    teacher_status = forms.CharField(widget=forms.Select(
+        attrs={'class': 'form-select form-control-sm'},
+        choices=Teacher_Statuses
+    ))
+    
+    
+    class Meta:
+        model = Teacher
+        fields = ('teacher_name', 'teacher_designation', 'teacher_status')
+
+
 class StudentForm(forms.ModelForm):
     reg_no = forms.CharField(widget=forms.TextInput(
-        attrs={'class': 'form-control form-control-lg'}
+        attrs={'class': 'form-control form-control-sm'}
         ))
     student_name = forms.CharField(widget=forms.TextInput(
-        attrs={'class': 'form-control form-control-lg'}
+        attrs={'class': 'form-control form-control-sm'}
     ))
     father_name = forms.CharField(widget=forms.TextInput(
-        attrs={'class': 'form-control form-control-lg'}
+        attrs={'class': 'form-control form-control-sm'}
     ))
     email = forms.EmailField(widget=forms.EmailInput(
-        attrs={'class': 'form-control form-control-lg'}
+        attrs={'class': 'form-control form-control-sm'}
     ))
     # img1 = forms.ImageField(widget=forms.Media(
     #     attrs={'class': 'form-control form-control-lg'}
