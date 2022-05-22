@@ -1,211 +1,325 @@
-<!doctype html>
-<html lang="en">
+<html>
+
   <head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
-
-    <style>
-      .gradient-custom-3 {
-          /* fallback for old browsers */
-          background: #84fab0;
-        
-          /* Chrome 10-25, Safari 5.1-6 */
-          background: -webkit-linear-gradient(to right, rgba(132, 250, 176, 0.5), rgba(143, 211, 244, 0.5));
-        
-          /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
-          background: linear-gradient(to right, rgba(132, 250, 176, 0.5), rgba(143, 211, 244, 0.5))
-        }
-        .gradient-custom-4 {
-          /* fallback for old browsers */
-          background: #84fab0;
-        
-          /* Chrome 10-25, Safari 5.1-6 */
-          background: -webkit-linear-gradient(to right, rgba(132, 250, 176, 1), rgba(143, 211, 244, 1));
-        
-          /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
-          background: linear-gradient(to right, rgba(132, 250, 176, 1), rgba(143, 211, 244, 1))
-        }
-    </style>
-
-    <title>Student Registration</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <title>Admin Home</title>
   </head>
+
   <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-success">
-      <div class="container-fluid text">
-        <a class="navbar-brand" href="/">FRAMS</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-            <li class="nav-item">
-              <a class="nav-link" aria-current="page" href="/">Home</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/admin">Admin panel</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href={% url 'pending_registrations' %}>Pending Registrations</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href={% url 'add_teacher' %}>Add Teacher</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link active" href={% url 'add_student' %}>Add Student</a>
-            </li>
-          </ul>
-          
-          <ul class="navbar-nav ml-auto">
-            <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle active" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                Welcome {{ request.user }}
-              </a>
-              <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                <li><a class="dropdown-item" href="/signout/">Logout</a></li>
+    <nav class="navbar navbar-fixed-top navbar-default">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+        </div>
+        
+        <!Logout Button!>
+        <div class="nav navbar-header navbar-profile  pull-right">
+          <ul class="nav">
+            <li class="dropdown">
+              <a data-toggle="dropdown" class="dropdown-toggle"><img src="https://user-images.githubusercontent.com/100554055/168123023-98f69162-c381-4599-a4f0-095d7ebab2a6.svg" width="30" height="30"> {{ request.user }} <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li>
+                  <a href={% url 'signout' %} title="Logout">Logout </a>
+                </li>
               </ul>
             </li>
           </ul>
         </div>
+        <!Logout Button!>
+        
+        
+        <!Nav Bar!>
+        <div id="navbar" class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li><a href={% url 'office_home' %}>Home</a></li>
+            <li><a href="/admin">Admin Panel</a></li>
+            <!drop down teacher!>
+            <li class="dropdown">
+              <a href="#" data-toggle="dropdown" class="dropdown-toggle"> Teacher<b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li>
+                  <a href={% url 'add_teacher' %} title="add_teacher">Add Teacher</a>
+                </li>
+                <li>
+                  <a href={% url 'pending_registrations' %} title="pending_registration">Pending Registration</a>
+                </li>
+                  <li>
+                  <a href="#" title="reports">Reports</a>
+                </li>
+              </ul>
+            </li>      
+            <!drop down teacher!>
+
+            <!drop down student!>
+            <li class="dropdown">
+              <a href="#" data-toggle="dropdown" class="dropdown-toggle"> Student<b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li>
+                  <a href={% url 'add_student' %} title="add_students">Add Student</a>
+                </li>
+                  <li>
+                  <a href="#" title="st_reports">Reports</a>
+                </li>
+              </ul>
+            </li>      
+          </ul>
+        </div>
       </div>
     </nav>
-    
-    <section class="vh-100 bg-image" style="background-image: url('https://mdbcdn.b-cdn.net/img/Photos/new-templates/search-box/img4.webp');">
-        <div class="mask d-flex align-items-center h-100 gradient-custom-3">
-          <div class="container h-100">
-            <div class="row d-flex justify-content-center align-items-center h-100">
-              <div class="col-12 col-md-9 col-lg-7 col-xl-6">
-                <div class="card" style="border-radius: 15px;">
-                  <div class="card-body p-5">
-                    <h2 class="text-uppercase text-center mb-5">Register Student</h2>
 
-                    {% for message in messages %}
-                      <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                        <strong>{{message}}!</strong>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                      </div>
-                    {% endfor %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        <strong>{{message}}!</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endfor %}
 
-                    {% comment %} {% for field in form %}
-                      {% if field.errors %}
-                        {% for error in field.errors %}
-                          <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            <strong>{{field.errors|escape}}</strong>
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                          </div>
-                        {% endfor %}
-                      {% endif %}
-                    {% endfor %} {% endcomment %}
-                    {% for error in form.non_field_errors %}
-                      <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        <strong>{{error}}</strong>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                      </div>
-                    {% endfor %}
+    {% for error in form.non_field_errors %}
+      <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <strong>{{error}}</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endfor %}
 
-                    {% comment %} {% if form.error %}
-                      {% for field in form %}
-                          {% for error in field.errors %}
-                              <div class="alert alert-danger">
-                                  <strong>{{ error|escape }}</strong>
-                              </div>
-                          {% endfor %}
-                      {% endfor %}
-                      {% for error in form.non_field_errors %}
-                          <div class="alert alert-danger">
-                              <strong>{{ error|escape }}</strong>
-                          </div>
-                      {% endfor %}
-                    {% endif %} {% endcomment %}
+    <div class="container">
+      <form method="post" action={% url 'add_student' %} enctype="multipart/form-data">
+        {% csrf_token %}
 
-                    <form method="post" action={% url 'add_student' %} enctype="multipart/form-data">
-                      {% csrf_token %} 
-
-                      <div class="form-outline mb-4">
-                        {{ form.reg_no }}
-                        <label class="form-label is-invalid">Reg No.</label>
-                        <div class="invalid-feedback">
-                          {{ form.reg_no.errors }}
-                        </div>
-                      </div>
-
-                      <div class="form-outline mb-4">
-                        {{ form.student_name }}
-                        <label class="form-label is-invalid">Student Name</label>
-                        <div class="invalid-feedback">
-                          {{ form.student_name.errors }}
-                        </div>
-                      </div>
-
-                      <div class="form-outline mb-4">
-                        {{ form.father_name }}
-                        <label class="form-label is-invalid">Father Name</label>
-                        <div class="invalid-feedback">
-                          {{ form.father_name.errors }}
-                        </div>
-                      </div>
-
-                      <div class="form-outline mb-4">
-                        {{ form.email }}
-                        <label class="form-label is-invalid">Email</label>
-                        <div class="invalid-feedback">
-                          {{ form.email.errors }}
-                        </div>
-                      </div>
-
-                      <div class="form-outline mb-4">
-                        <label class="form-label mx-2 is-invalid" for="img1">Image 1</label>
-                        {{ form.img1 }}
-                        <div class="invalid-feedback">
-                          {{ form.img1.errors }}
-                        </div>
-                      </div>
-
-                      <div class="form-outline mb-4">
-                        <label class="form-label mx-2 is-invalid" for="img1">Image 2</label>
-                        {{ form.img2 }}
-                        <div class="invalid-feedback">
-                          {{ form.img2.errors }}
-                        </div>
-                      </div>
-
-                      <div class="form-outline mb-4">
-                        <label class="form-label mx-2 is-invalid" for="img1">Image 3</label>
-                        {{ form.img3 }}
-                        <div class="invalid-feedback">
-                          {{ form.img3.errors }}
-                        </div>
-                      </div>
-          
-                      <div class="d-flex justify-content-center">
-                        <button type="submit" class="btn btn-success btn-block btn-lg gradient-custom-4 text-body">Register</button>
-                      </div>
-      
-                    </form>
-      
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+        <h1>Register Student</h1>
+        
+        <legend><span class="number">1</span>Contact info</legend>   
+        <label class="is-invalid">Reg No:</label>
+        <div class="invalid-feedback">
+          {{ form.reg_no.errors }}
         </div>
-      </section>
-    
+        {{ form.reg_no }}
+        
+        <label class="is-invalid">Student Name:</label>
+        <div class="invalid-feedback">
+          {{ form.student_name.errors }}
+        </div>
+        {{ form.student_name }}
 
+        <label class="is-invalid">Father Name:</label>
+        <div class="invalid-feedback">
+          {{ form.father_name.errors }}
+        </div>
+        {{ form.father_name }}
 
+        <label class="is-invalid">Student Email:</label>
+        <div class="invalid-feedback">
+          {{ form.email.errors }}
+        </div>
+        {{ form.email }}
 
-    <!-- Optional JavaScript; choose one of the two! -->
-
-    <!-- Option 1: Bootstrap Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
-
-    <!-- Option 2: Separate Popper and Bootstrap JS -->
-    <!--
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js" integrity="sha384-7+zCNj/IqJ95wo16oMtfsKbZ9ccEh31eOz1HGyDuCQ6wgnyJNSYdrPa03rtR1zdB" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js" integrity="sha384-QJHtvGhmr9XOIpI6YVutG+2QOK9T+ZnN4kzFN1RtK3zEFEIsxhlmWl5/YESvpZ13" crossorigin="anonymous"></script>
-    -->
+        <legend><span class="number">2</span>Upload Student Images</legend>  
+        <br>
+        <div class="form-outline mb-4">
+          <label class="form-label mx-2 is-invalid" for="img1">Image 1</label>
+          <div class="invalid-feedback">
+            {{ form.img1.errors }}
+          </div>
+          <div class="form-control form-control-lg">{{ form.img1 }}</div>
+        </div>
+        <br>
+        <div class="form-outline mb-4">
+          <label class="form-label mx-2 is-invalid" for="img1">Image 2</label>
+          <div class="invalid-feedback">
+            {{ form.img2.errors }}
+          </div>
+          <div class="form-control form-control-lg">{{ form.img2 }}</div>         
+        </div>
+        <br> 
+        <div class="form-outline mb-4">
+          <label class="form-label mx-2 is-invalid" for="img1">Image 3</label>
+          <div class="invalid-feedback">
+            {{ form.img3.errors }}
+          </div>
+          <div class="form-control form-control-lg">{{ form.img3 }}</div>
+        </div>
+        <br><br>
+        <button type="submit">Register</button>
+      </form>
+    </div>
   </body>
+
+  <style>
+  .navbar-profile ul.nav > li > a {
+    color: #134e0a;
+    padding-top: 15px;
+    padding-bottom: 15px;
+    line-height: 20px;
+  }
+
+  .navbar-profile ul.nav > li .dropdown-menu {
+    right: 0;
+    left: auto;
+  }
+
+  @media (max-width: 767px) {
+    .navbar-profile {
+      position: absolute;
+      display: inline-block;
+      width: auto;
+      right: 80px;
+      top: 0;
+      text-align: center;
+      margin: auto;
+    }
+  }
+
+  .navbar-default {
+    background-color: #21a860;
+  }
+  .navbar-default .navbar-nav>li>a {
+    color: white;
+  }
+  </style>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+  <style>
+  *, *:before, *:after {
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    color: #384047;
+    background-image: url(https://user-images.githubusercontent.com/100554055/168091877-d1969fa3-9979-4720-a5d0-c1dab43884c3.png);
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+  }
+    
+    
+  form {
+    max-width: 250px;
+    margin: 10px auto;
+    padding: 10px 20px;
+    background: #f4f7f8;
+    border-radius: 8px;
+  }
+
+  .invalid-feedback {
+    font-size: 12px;
+    color: red;
+  }
+
+  h1 {
+    margin: 0 0 25px 0;
+    text-align: center;
+  }
+  h2 {
+    text-align: center;
+    font-family: 'Nunito', sans-serif;
+    font-weight: normal;
+    color: #384047;
+    font-size: 1rem;
+  }
+    
+  input[type="text"],
+  input[type="password"],
+  input[type="date"],
+  input[type="datetime"],
+  input[type="email"],
+  input[type="number"],
+  input[type="search"],
+  input[type="tel"],
+  input[type="time"],
+  input[type="url"],
+  textarea,
+  select {
+    background: rgba(255,255,255,0.1);
+    border: none;
+    font-size: 14px;
+    height: auto;
+    margin: 0;
+    outline: 0;
+    padding: 15px;
+    width: 100%;
+    background-color: #e8eeef;
+    color: #8a97a0;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.03) inset;
+    margin-bottom: 30px;
+  }
+
+  input[type="radio"],
+  input[type="checkbox"] {
+    margin: 0 4px 8px 0;
+  }
+
+  select {
+    padding: 6px;
+    height: 28px;
+    border-radius: 2px;
+  }
+
+  button {
+    padding: 17px 37px 16px 37px;
+    color: #FFF;
+    background-color: #47AB11;
+    font-size: 18px;
+    text-align: center;
+    font-style: normal;
+    border-radius: 5px;
+    width: 100%;
+    border: 1px solid #3ac162;
+    border-width: 1px 1px 3px;
+    box-shadow: 0 -1px 0 rgba(255,255,255,0.1) inset;
+    margin-bottom: 10px;
+  }
+
+  fieldset {
+    margin-bottom: 5px;
+    border: none;
+  }
+
+  legend {
+    font-size: 1.4em;
+    margin-bottom: 10px;
+  }
+
+  label {
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  label.light {
+    font-weight: 300;
+    display: inline;
+  }
+
+  .number {
+    background-color: #47AB11;
+    color: #fff;
+    height: 30px;
+    width: 30px;
+    display: inline-block;
+    font-size: 0.8em;
+    margin-right: 4px;
+    line-height: 30px;
+    text-align: center;
+    text-shadow: 0 1px 0 rgba(255,255,255,0.2);
+    border-radius: 100%;
+  }
+
+  @media screen and (min-width: 480px) {
+
+    form {
+      max-width: 480px;
+    }
+
+  }
+  </style>
 </html>
