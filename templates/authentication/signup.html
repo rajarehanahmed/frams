@@ -34,19 +34,14 @@
       <h1>Sign Up</h1>
     
       <legend><span class="number">1</span>Sign Up info</legend>
-      <label class="is-invalid">Username:</label>
+      {{ user_form.as_p }}
+      {% comment %} <label class="is-invalid">Username:</label>
       <div class="invalid-feedback">
         {{ user_form.username.errors }}
       </div>
-      {{ user_form.username }}
+      {{ user_form.username }} {% endcomment %}
       
-      <label class="is-invalid" for="name">Name:</label>
-      <div class="invalid-feedback">
-        {{ teacher_form.teacher_name.errors }}
-      </div>
-      {{ teacher_form.teacher_name }}
-      
-      <label class="is-invalid">Email:</label>
+      {% comment %} <label class="is-invalid">Email:</label>
       <div class="invalid-feedback">
         {{ user_form.email.errors }}
       </div>
@@ -59,9 +54,15 @@
       {{ user_form.password }}
       
       <label for="password">Repeat Password:</label>
-      <input type="password" id="repeat_password" name="pass1">               
+      <input type="password" id="repeat_password" name="pass1">                {% endcomment %}
     
       <legend><span class="number">2</span>Profile</legend>
+
+      <label class="is-invalid" for="name">Name:</label>
+      <div class="invalid-feedback">
+        {{ teacher_form.teacher_name.errors }}
+      </div>
+      {{ teacher_form.teacher_name }}
   
       <label class="is-invalid">Teacher Type:</label>
       <div class="invalid-feedback">
@@ -117,8 +118,13 @@
     border-radius: 8px;
     }
 
+    .errorlist {
+      font-size: 14px;
+      color: red;
+    }
+
     .invalid-feedback {
-      font-size: 12px;
+      font-size: 14px;
       color: red;
     }
 
@@ -167,7 +173,7 @@
 
     select {
     padding: 6px;
-    height: 40px;
+    height: 50px;
     border-radius: 2px;
     }
 
@@ -199,6 +205,7 @@
     label {
     display: block;
     margin-bottom: 8px;
+    font-weight: bold;
     }
 
     label.light {

@@ -101,17 +101,13 @@
           
         <legend><span class="number">1</span>Sign Up info</legend>
 
-        <label class="is-invalid">Username:</label>
+        {{ user_form.as_p }}
+
+        {% comment %} <label class="is-invalid">Username:</label>
         <div class="invalid-feedback">
           {{ user_form.username.errors }}
         </div>
         {{ user_form.username }}
-        
-        <label class="is-invalid">Name:</label>
-        <div class="invalid-feedback">
-          {{ teacher_form.teacher_name.errors }}
-        </div>
-        {{ teacher_form.teacher_name }}
 
         <label class="is-invalid">Email:</label>
         <div class="invalid-feedback">
@@ -126,9 +122,15 @@
         {{ user_form.password }}
         
         <label for="password">Repeat Password:</label>
-        <input type="password" id="repeat_password" name="pass1">               
+        <input type="password" id="repeat_password" name="pass1">                {% endcomment %}
       
         <legend><span class="number">2</span>Profile</legend>
+
+        <label class="is-invalid">Name:</label>
+        <div class="invalid-feedback">
+          {{ teacher_form.teacher_name.errors }}
+        </div>
+        {{ teacher_form.teacher_name }}
     
         <label class="is-invalid">Teacher Type:</label>
         <div class="invalid-feedback">
@@ -243,15 +245,20 @@
     
     
   form {
-    max-width: 250px;
-    margin: 10px auto;
+    max-width: 500px;
+    margin: 70px auto;
     padding: 10px 20px;
     background: #f4f7f8;
     border-radius: 8px;
   }
 
+  .errorlist {
+    font-size: 14px;
+    color: red;
+  }
+
   .invalid-feedback {
-    font-size: 12px;
+    font-size: 14px;
     color: red;
   }
 
@@ -290,7 +297,11 @@
     background-color: #e8eeef;
     color: #8a97a0;
     box-shadow: 0 1px 0 rgba(0,0,0,0.03) inset;
-    margin-bottom: 30px;
+    margin-bottom: 10px;
+  }
+
+  .helptext {
+    margin-bottom: 20px;
   }
 
   input[type="radio"],
@@ -300,7 +311,7 @@
 
   select {
     padding: 6px;
-    height: 28px;
+    height: 50px;
     border-radius: 2px;
   }
 

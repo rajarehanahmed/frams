@@ -100,15 +100,15 @@
         <label class="is-invalid">Email:</label>
         {{ t_user.email }}
 
-        <input hidden id="email" name="email" value="{{ t_user.email }}">
-        
+        <input hidden id="email" name="email" value="{{ t_user.email }}">              
+      
+        <legend><span class="number">2</span>Profile</legend>
+
         <label class="is-invalid">Name:</label>
         <div class="invalid-feedback">
           {{ form.teacher_name.errors }}
         </div>
-        {{ form.teacher_name }}               
-      
-        <legend><span class="number">2</span>Profile</legend>
+        {{ form.teacher_name }} 
     
         <label class="is-invalid">Teacher Type:</label>
         <div class="invalid-feedback">
@@ -225,7 +225,7 @@
     
   form {
     max-width: 250px;
-    margin: 10px auto;
+    margin: 70px auto;
     padding: 10px 20px;
     background: #f4f7f8;
     border-radius: 8px;

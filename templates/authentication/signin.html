@@ -23,7 +23,8 @@
       
       body {
         font-family: 'Lato', sans-serif;
-        color: #4A4A4A;
+        {% comment %} color: #FF0000; {% endcomment %}
+        {% comment %} color: #4A4A4A; {% endcomment %}
         display: flex;
         justify-content: center;
         align-items: center;
@@ -113,6 +114,21 @@
         text-align: center;
         color: White;
       }
+
+      .errorlist {
+        font-size: 14px;
+        font-weight: 700;
+        display: block;
+        padding: 10px 12px;
+        margin: 0 0 10px 0;
+        color: #FF0000;
+        border: 1px solid var(--error-fg);
+        border-radius: 4px;
+        background-color: var(--body-bg);
+        background-position: 5px 12px;
+        overflow-wrap: break-word;
+    }
+
     </style>
 
     <title>FRAMS Signin</title>
@@ -131,13 +147,17 @@
     <form method="post" action={% url 'signin' %}>
       {% csrf_token %}
       <h2>F R A M S</h2>
+      {{ form.as_p }}
+      {% comment %} <p class="errornote"> {{ form.errors }} </p>
       <div class="form-field">
+        {{ form.username }}
         <input type="text" name="username" id="username" placeholder="Username" required/>
       </div>
       
       <div class="form-field">
+        {{ form.password }}
         <input type="password" name="pass" id="password" placeholder="Password" required/>                         
-      </div>
+      </div> {% endcomment %}
       
       <div class="form-field">
         <button class="btn" type="submit">Log in</button>

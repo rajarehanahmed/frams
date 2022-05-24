@@ -31,51 +31,44 @@ def addTeacher(request):
     if request.user.is_authenticated:
         if request.user.is_superuser:
             if request.method == 'POST':
-                p1 = request.POST['pass1']
+                # p1 = request.POST['pass1']
                 user_form = UserForm(request.POST)
 
                 if user_form.is_valid():
                     user_form.save()
                     user = User.objects.get(username=user_form.cleaned_data['username'])
+                    user.is_active = False
+                    
+                    teacher  = Teacher(user_id=user)
+                    teacher_form = TeacherForm(request.POST, request.FILES, instance=teacher)
 
-                    if user_form.cleaned_data['password'] == p1:
-                        teacher  = Teacher(user_id=user)
-                        teacher_form = TeacherForm(request.POST, request.FILES, instance=teacher)
+                    if teacher_form.is_valid():
+                        teacher_form.save()
+                        # Sending Confirmation Email
+                        current_site = get_current_site(request)
+                        email_subject = "Confirm your email @ FRAMS - Login!!"
+                        message2 = render_to_string("authentication/email_confirmation.html", {
+                            'email': user.email,
+                            'domain': current_site.domain,
+                            'uid': force_str(urlsafe_base64_encode(force_bytes(user.pk))),
+                            'token': generate_token.make_token(user)
+                        })
+                        email = EmailMessage(email_subject, message2, settings.EMAIL_HOST_USER, [user.email])
+                        email.fail_silently = True
+                        email.send()
 
-                        if teacher_form.is_valid():
-                            teacher_form.save()
-                            # Sending Confirmation Email
-                            current_site = get_current_site(request)
-                            email_subject = "Confirm your email @ FRAMS - Login!!"
-                            message2 = render_to_string("authentication/email_confirmation.html", {
-                                'email': user.email,
-                                'domain': current_site.domain,
-                                'uid': force_str(urlsafe_base64_encode(force_bytes(user.pk))),
-                                'token': generate_token.make_token(user)
-                            })
-                            email = EmailMessage(email_subject, message2, settings.EMAIL_HOST_USER, [user.email])
-                            email.fail_silently = True
-                            email.send()
-
-                            messages.success(request, 'Teacher Registered Successfully, Please Ask the Teacher to Verify their Email. Thank you!')
-                            return redirect('index')
-
-                        else:
-                            user.delete()
-                            return render(request, 'progoffice/add_teacher.html', {'user_form': user_form, 'teacher_form': teacher_form})
+                        messages.success(request, 'Teacher Registered Successfully, Please Ask the Teacher to Verify their Email. Thank you!')
+                        return redirect('index')
 
                     else:
                         user.delete()
-                        messages.error(request, 'Passwords do not match')
-                        return render(request, 'progoffice/add_teacher.html', {'user_form': user_form, 'teacher_form': TeacherForm()})
+                        return render(request, 'progoffice/add_teacher.html', {'user_form': user_form, 'teacher_form': teacher_form})
 
                 else:
                     return render(request, 'progoffice/add_teacher.html', {'user_form': user_form, 'teacher_form': TeacherForm()})
 
             else:
-                teacher_form = TeacherForm()
-                user_form = UserForm()
-                return render(request, 'progoffice/add_teacher.html', {'teacher_form': teacher_form, 'user_form': user_form})
+                return render(request, 'progoffice/add_teacher.html', {'teacher_form': TeacherForm(), 'user_form': UserForm()})
 
         else:
             return HttpResponse('404 - Page Not Found')
@@ -93,7 +86,6 @@ def pendingRegistrations(request):
                 teacher = Teacher.objects.get(user_id=teacher_user)
                 form = TeacherForm(instance=teacher)
                 context = {
-                    'teacher': teacher,
                     't_user': teacher_user,
                     'form': form
                 }
@@ -172,7 +164,11 @@ def completeSignup(request):
                         return redirect('pending_registrations')
 
                     else:
-                        return render(request, 'authentication/complete_signup.html', {'form': form})
+                        context = {
+                            't_user': User.objects.get(email__exact=email),
+                            'form': form
+                        }
+                        return render(request, 'authentication/complete_signup.html', context)
 
         else:
             return HttpResponse('404 - Page Not Found')
@@ -192,10 +188,9 @@ def addStudent(request):
                     messages.success(request, 'Student Registered Successfully')
                     return redirect('index')
                 else:
-                    print(form.errors.as_data())
                     return render(request, 'progoffice/add_student.html', {'form': form})
             
-            else:    
+            else:
                 form = StudentForm()
                 return render(request, 'progoffice/add_student.html', {'form': form})
         
