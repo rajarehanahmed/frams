@@ -124,7 +124,7 @@ class StudentForm(forms.ModelForm):
         if Student.objects.filter(reg_no=reg_no).exists():
             self.add_error('reg_no', 'A Student with this Reg# already exists!')
         if not (regex.search(regWithNoDigit) == None):
-                self.add_error('reg_no', 'Reg# contains special character(s)!')
+            self.add_error('reg_no', 'Reg# contains special character(s)!')
 
         name = cd.get('student_name')
         nameWithNoDigit = ''.join([i for i in name if not i.isdigit()])

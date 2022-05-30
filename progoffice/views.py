@@ -31,7 +31,6 @@ def addTeacher(request):
     if request.user.is_authenticated:
         if request.user.is_superuser:
             if request.method == 'POST':
-                # p1 = request.POST['pass1']
                 user_form = UserForm(request.POST)
 
                 if user_form.is_valid():
@@ -44,6 +43,7 @@ def addTeacher(request):
 
                     if teacher_form.is_valid():
                         teacher_form.save()
+
                         # Sending Confirmation Email
                         current_site = get_current_site(request)
                         email_subject = "Confirm your email @ FRAMS - Login!!"
@@ -65,7 +65,11 @@ def addTeacher(request):
                         return render(request, 'progoffice/add_teacher.html', {'user_form': user_form, 'teacher_form': teacher_form})
 
                 else:
-                    return render(request, 'progoffice/add_teacher.html', {'user_form': user_form, 'teacher_form': TeacherForm()})
+                    context = {
+                        'user_form': user_form,
+                        'teacher_form': TeacherForm(request.POST, request.FILES)
+                    }
+                    return render(request, 'progoffice/add_teacher.html', context)
 
             else:
                 return render(request, 'progoffice/add_teacher.html', {'teacher_form': TeacherForm(), 'user_form': UserForm()})

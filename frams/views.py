@@ -79,7 +79,7 @@ def signup(request):
 
         else:
             print('user_form invalid')
-            return render(request, 'authentication/signup.html', {'user_form': user_form, 'teacher_form': PartialTeacherForm()})
+            return render(request, 'authentication/signup.html', {'user_form': user_form, 'teacher_form': PartialTeacherForm(request.POST)})
 
     else:
         return render(request, 'authentication/signup.html', {'user_form': UserForm(), 'teacher_form': PartialTeacherForm()})

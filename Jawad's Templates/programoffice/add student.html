@@ -1,0 +1,286 @@
+<html>
+<head>
+  
+ <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+<title>Admin Home</title>
+</head>
+<body>
+  <nav class="navbar navbar-fixed-top navbar-default">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+    </div>
+    
+     <!Logout Button!>
+    <div class="nav navbar-header navbar-profile  pull-right">
+      <ul class="nav">
+        <li class="dropdown">
+          <a data-toggle="dropdown" class="dropdown-toggle"><img src="https://user-images.githubusercontent.com/100554055/168123023-98f69162-c381-4599-a4f0-095d7ebab2a6.svg" width="30" height="30"> JD Smith <b class="caret"></b></a>
+          <ul class="dropdown-menu">
+            <li>
+              <a href="#profile" title="Profile">Profile</a>
+            </li>
+            <li>
+              <a href="#logout" title="Logout">Logout </a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+     <!Logout Button!>
+    
+    
+     <!Nav Bar!>
+    <div id="navbar" class="collapse navbar-collapse">
+      <ul class="nav navbar-nav">
+        <li><a href="#">Home</a></li>
+        <li><a href="#admin_panel">Admin Panel</a></li>
+        <!drop down teacher!>
+        <li class="dropdown">
+          <a href="#" data-toggle="dropdown" class="dropdown-toggle"> Teacher<b class="caret"></b></a>
+          <ul class="dropdown-menu">
+            <li>
+              <a href="#add_teacher" title="add_teacher">Add Teacher</a>
+            </li>
+            <li>
+              <a href="#pending_registration" title="pending_registration">Pending Registration</a>
+            </li>
+              <li>
+              <a href="#reports" title="reports">Reports</a>
+            </li>
+          </ul>
+        </li>      
+        <!drop down teacher!>
+        <!drop down student!>
+        <li class="dropdown">
+          <a href="#" data-toggle="dropdown" class="dropdown-toggle"> Student<b class="caret"></b></a>
+          <ul class="dropdown-menu">
+            <li>
+              <a href="#add_students" title="add_students">Add Student</a>
+            </li>
+              <li>
+              <a href="#st_reports" title="st_reports">Reports</a>
+            </li>
+          </ul>
+        </li>      
+      </ul>
+    </div>
+  </div>
+</nav>
+<div class="container">
+<form action="index.html" method="post">
+        <h1>Register Student</h1>
+        
+          <legend><span class="number">1</span>Contact info</legend>
+          <label for="regno">Reg No:</label>
+          <input type="text" id="Reg No" name="reg_no">
+          
+          <label for="student name">Student Name:</label>
+          <input type="text" id="student name" name="student_name">
+
+          <label for="father name">Father Name:</label>
+          <input type="text" id="father name" name="father_name">
+
+          <label for="mail">Student Email:</label>
+          <input type="email" id="student email" name="student_email">   
+                   
+	  <legend><span class="number">2</span>Upload Student Images</legend>  
+<br>
+	  <div class="form-outline mb-4">
+               <label class="form-label mx-2" for="img1">Image 1</label>
+          <div class="form-control form-control-lg"><input type="file" name="img1" accept="image/*" required id="id_img1"></div>
+          </div>
+	  <br>
+	   <div class="form-outline mb-4">
+                        <label class="form-label mx-2" for="img1">Image 2</label>
+                        <div class="form-control form-control-lg"><input type="file" name="img2" accept="image/*" required id="id_img2"></div>
+<br>          
+ </div>
+                      <div class="form-outline mb-4">
+                        <label class="form-label mx-2" for="img1">Image 3</label>
+                        <div class="form-control form-control-lg"><input type="file" name="img3" accept="image/*" required id="id_img3"></div>
+                      </div>          
+	<br><br>
+        <button type="submit">Register</button>
+        
+     
+      </form>
+</div>
+</body>
+</html>
+
+<style>
+.navbar-profile ul.nav > li > a {
+  color: #134e0a;
+  padding-top: 15px;
+  padding-bottom: 15px;
+  line-height: 20px;
+}
+
+.navbar-profile ul.nav > li .dropdown-menu {
+  right: 0;
+  left: auto;
+}
+
+@media (max-width: 767px) {
+  .navbar-profile {
+    position: absolute;
+    display: inline-block;
+    width: auto;
+    right: 80px;
+    top: 0;
+    text-align: center;
+    margin: auto;
+  }
+}
+
+.navbar-default {
+  background-color: #21a860;
+}
+.navbar-default .navbar-nav>li>a {
+  color: white;
+}
+</style>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+<style>
+*, *:before, *:after {
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Nunito', sans-serif;
+  color: #384047;
+  background-image: url(https://user-images.githubusercontent.com/100554055/168091877-d1969fa3-9979-4720-a5d0-c1dab43884c3.png);
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+}
+  
+  
+form {
+  max-width: 250px;
+  margin: 10px auto;
+  padding: 10px 20px;
+  background: #f4f7f8;
+  border-radius: 8px;
+}
+
+h1 {
+  margin: 0 0 25px 0;
+  text-align: center;
+}
+h2 {
+  text-align: center;
+  font-family: 'Nunito', sans-serif;
+  font-weight: normal;
+  color: #384047;
+  font-size: 1rem;
+}
+  
+input[type="text"],
+input[type="password"],
+input[type="date"],
+input[type="datetime"],
+input[type="email"],
+input[type="number"],
+input[type="search"],
+input[type="tel"],
+input[type="time"],
+input[type="url"],
+textarea,
+select {
+  background: rgba(255,255,255,0.1);
+  border: none;
+  font-size: 14px;
+  height: auto;
+  margin: 0;
+  outline: 0;
+  padding: 15px;
+  width: 100%;
+  background-color: #e8eeef;
+  color: #8a97a0;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.03) inset;
+  margin-bottom: 30px;
+}
+
+input[type="radio"],
+input[type="checkbox"] {
+  margin: 0 4px 8px 0;
+}
+
+select {
+  padding: 6px;
+  height: 28px;
+  border-radius: 2px;
+}
+
+button {
+  padding: 17px 37px 16px 37px;
+  color: #FFF;
+  background-color: #47AB11;
+  font-size: 18px;
+  text-align: center;
+  font-style: normal;
+  border-radius: 5px;
+  width: 100%;
+  border: 1px solid #3ac162;
+  border-width: 1px 1px 3px;
+  box-shadow: 0 -1px 0 rgba(255,255,255,0.1) inset;
+  margin-bottom: 10px;
+}
+
+fieldset {
+  margin-bottom: 5px;
+  border: none;
+}
+
+legend {
+  font-size: 1.4em;
+  margin-bottom: 10px;
+}
+
+label {
+  display: block;
+  margin-bottom: 8px;
+}
+
+label.light {
+  font-weight: 300;
+  display: inline;
+}
+
+.number {
+  background-color: #47AB11;
+  color: #fff;
+  height: 30px;
+  width: 30px;
+  display: inline-block;
+  font-size: 0.8em;
+  margin-right: 4px;
+  line-height: 30px;
+  text-align: center;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.2);
+  border-radius: 100%;
+}
+
+@media screen and (min-width: 480px) {
+
+  form {
+    max-width: 480px;
+  }
+
+}
+</style>
+
