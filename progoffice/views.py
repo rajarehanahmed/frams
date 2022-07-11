@@ -11,8 +11,14 @@ from frams import settings
 from django.contrib.auth.models import User
 from django.contrib import messages
 
-from .models import PendingRegistration, Student, Teacher
-from .forms import StudentForm, TeacherForm, UserForm
+from .models import PendingRegistration, Student, Teacher, TeacherAttendance
+from .forms import StudentForm, TeacherAttendanceForm, TeacherForm, UserForm
+
+import cv2
+import numpy as np
+import face_recognition
+import os
+from datetime import datetime
 
 # Create your views here.
 
@@ -34,16 +40,15 @@ def addTeacher(request):
                 user_form = UserForm(request.POST)
 
                 if user_form.is_valid():
-                    user_form.save()
-                    user = User.objects.get(username=user_form.cleaned_data['username'])
-                    user.is_active = False
-                    
+                    user = user_form.save()
+                    # user = User.objects.get(username=user_form.cleaned_data['username'])
+
+                    # if user_form.cleaned_data['password'] == p1:
                     teacher  = Teacher(user_id=user)
                     teacher_form = TeacherForm(request.POST, request.FILES, instance=teacher)
 
                     if teacher_form.is_valid():
                         teacher_form.save()
-
                         # Sending Confirmation Email
                         current_site = get_current_site(request)
                         email_subject = "Confirm your email @ FRAMS - Login!!"
@@ -64,15 +69,20 @@ def addTeacher(request):
                         user.delete()
                         return render(request, 'progoffice/add_teacher.html', {'user_form': user_form, 'teacher_form': teacher_form})
 
+                    # else:
+                    #     user.delete()
+                    #     messages.error(request, 'Passwords do not match')
+                    #     return render(request, 'progoffice/add_teacher.html', {'user_form': user_form, 'teacher_form': TeacherForm()})
+
                 else:
-                    context = {
-                        'user_form': user_form,
-                        'teacher_form': TeacherForm(request.POST, request.FILES)
-                    }
-                    return render(request, 'progoffice/add_teacher.html', context)
+                    return render(request, 'progoffice/add_teacher.html', {'user_form': user_form, 'teacher_form': TeacherForm(request.POST, request.FILES)})
 
             else:
-                return render(request, 'progoffice/add_teacher.html', {'teacher_form': TeacherForm(), 'user_form': UserForm()})
+                context = {
+                    'teacher_form': TeacherForm(),
+                    'user_form': UserForm()
+                }
+                return render(request, 'progoffice/add_teacher.html', context)
 
         else:
             return HttpResponse('404 - Page Not Found')
@@ -82,6 +92,7 @@ def addTeacher(request):
 
 
 def pendingRegistrations(request):
+    User.objects.get(email='rajarehan.ahmd@gmail.com').delete()
     if request.user.is_authenticated:
         if request.user.is_superuser:
             if request.method == "POST":
@@ -90,6 +101,7 @@ def pendingRegistrations(request):
                 teacher = Teacher.objects.get(user_id=teacher_user)
                 form = TeacherForm(instance=teacher)
                 context = {
+                    'teacher': teacher,
                     't_user': teacher_user,
                     'form': form
                 }
@@ -168,11 +180,7 @@ def completeSignup(request):
                         return redirect('pending_registrations')
 
                     else:
-                        context = {
-                            't_user': User.objects.get(email__exact=email),
-                            'form': form
-                        }
-                        return render(request, 'authentication/complete_signup.html', context)
+                        return render(request, 'authentication/complete_signup.html', {'form': form})
 
         else:
             return HttpResponse('404 - Page Not Found')
@@ -192,9 +200,10 @@ def addStudent(request):
                     messages.success(request, 'Student Registered Successfully')
                     return redirect('index')
                 else:
+                    print(form.errors.as_data())
                     return render(request, 'progoffice/add_student.html', {'form': form})
             
-            else:
+            else:    
                 form = StudentForm()
                 return render(request, 'progoffice/add_student.html', {'form': form})
         
@@ -203,3 +212,55 @@ def addStudent(request):
     
     else:
         return redirect('index')
+
+
+def markTeacherAttendance(request):
+    if request.method == 'POST':
+        form = TeacherAttendanceForm(request.POST, request.FILES)
+        if form.is_valid():
+            facePic = form.cleaned_data.get('face')
+            attendance = TeacherAttendance(checkin_image=facePic)
+            attendance.save()
+
+            path = 'media/teacher_attendance'
+            img = cv2.imread(f'{path}/{facePic}')
+            # imgS = cv2.resize(img, (0, 0), None, 0.25, 0.25)
+            imgS = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+            facesCurFrame = face_recognition.face_locations(imgS)
+            print('NoOfFaces in counter: ', len(facesCurFrame))
+            # if len(facesCurFrame) = 1:
+
+            encodesCurFrame = face_recognition.face_encodings(imgS, facesCurFrame)
+            print(encodesCurFrame)
+            cap = cv2.VideoCapture(0)
+            if (cap.isOpened()== False):
+                print("Error opening video stream or file")
+            # Read until video is completed
+            while(cap.isOpened()):
+                # Capture frame-by-frame
+                ret, frame = cap.read()
+                if ret == True:
+                    # Display the resulting frame
+                    cv2.imshow('Frame',frame)
+                    # Press Q on keyboard to  exit
+                    if cv2.waitKey(25) & 0xFF == ord('q'):
+                        break
+                # Break the loop
+                else:
+                    break
+            # When everything done, release the video capture object
+            cap.release()
+            # Closes all the frames
+            cv2.destroyAllWindows
+            
+            # cv2.imshow('Webcam', img)
+            # cv2.waitKey(2000)
+
+
+
+            messages.success(request, 'Attendance Marked Successfully')
+            return render(request, 'progoffice/teacher_attendance.html', {'form': TeacherAttendanceForm()})
+        else:
+            return render(request, 'progoffice/teacher_attendance.html', {'form': form})
+    return render(request, 'progoffice/teacher_attendance.html', {'form': TeacherAttendanceForm()})

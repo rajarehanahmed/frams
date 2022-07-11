@@ -32,10 +32,6 @@ def index(request):
 def signin(request):
     if request.method == "POST":
         form = LoginForm(request, data=request.POST)
-        # username = request.POST['username']
-        # p = request.POST['pass']
-        # user = authenticate(username=username, password=p)
-        # if user is not None:
         if form.is_valid():
             user = form.get_user()
             login(request, user)

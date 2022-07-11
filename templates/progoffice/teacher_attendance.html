@@ -2,7 +2,7 @@
 <html lang="en" >
   <head>
       <meta charset="UTF-8">
-      <title>Add Teacher</title>
+      <title>Teacher Attendance</title>
       <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1"><link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css'>
@@ -18,7 +18,7 @@
       <!-- Navigation-->
       <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0">
         <div class="navbar-header">
-          <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".navbar-collapse"><span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button><a class="navbar-brand" href={% url 'office_home' %}>F R A M S</a>
+          <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".navbar-collapse"><span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button><a class="navbar-brand" href="index.html">F R A M S</a>
         </div>
         <!-- /Navigation Bar Notification-->
         <ul class="nav navbar-top-links navbar-right">
@@ -92,87 +92,25 @@
       </nav>
     </div>
 
-    <!-- /Body Header-->
-    <div id="page-wrapper">
-      <!-- /Register Teacher-->
+    <div class="page-wrapper">
       <div class="row">
-        {% for message in messages %}
-          <div class="alert alert-{{ message.tags }}" role="alert">
-            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
-            <span class="sr-only">Error:</span>
-            {{ message }}
-          </div>
-        {% endfor %}
-        {% for error in form.non_field_errors %}
-          <div class="alert alert-{{ message.tags }}" role="alert">
-            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
-            <span class="sr-only">Error:</span>
-            {{ message }}
-          </div>
-        {% endfor %}
-        <div class="col-md-auto"></div>
-        <div class="col-md-auto">
-          <form method="post" action={% url 'add_teacher' %} enctype="multipart/form-data">
+        
+        <div class="col-md-3"></div>
+        <div class="col-md-6">
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible" role="alert">
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+              <strong>{{ message }}</strong>
+            </div>
+          {% endfor %}
+          <h1>Mark Attendance</h1>
+          <form action={% url 'mark_teacher_attendance' %} method="POST" enctype="multipart/form-data">
             {% csrf_token %}
-            <h1 class="page-header">Register Teacher</h1>
-            <legend><span class="number">1</span>Sign Up info</legend>
-            {{ user_form.as_p }}            
-          
-            <legend><span class="number">2</span>Profile</legend>
-            <label class="is-invalid">Name:</label>
-            <div class="invalid-feedback">
-              {{ teacher_form.teacher_name.errors }}
-            </div>
-            {{ teacher_form.teacher_name }}
-
-            <label class="is-invalid">Teacher Type:</label>
-            <div class="invalid-feedback">
-              {{ teacher_form.teacher_status.errors }}
-            </div>
-            {{ teacher_form.teacher_status }}
-            <br><br>
-
-            <label class="is-invalid">Designation:</label>
-            <div class="invalid-feedback">
-              {{ teacher_form.teacher_designation.errors }}
-            </div>
-            {{ teacher_form.teacher_designation }}
-
-            <legend><span class="number">3</span>Upload Images</legend>  
+            {{ form }} 
             <br>
-
-            <div class="form-outline mb-4">
-              <label class="form-label mx-2 is-invalid" for="img1">Image 1</label>
-              <div class="invalid-feedback">
-                {{ teacher_form.img1.errors }}
-              </div>
-              {{ teacher_form.img1 }}
-            </div>
-            <br>
-    
-            <div class="form-outline mb-4">
-              <label class="form-label mx-2" for="img1">Image 2</label>
-              <div class="invalid-feedback">
-                {{ teacher_form.img2.errors }}
-              </div>
-              {{ teacher_form.img2 }}
-            </div>
-            <br>
-    
-            <div class="form-outline mb-4">
-              <label class="form-label mx-2" for="img1">Image 3</label>
-              <div class="invalid-feedback">
-                {{ teacher_form.img3.errors }}
-              </div>
-              {{ teacher_form.img3 }}
-            </div>
-            <br><br>
-
-            <button type="submit">Register</button>
-
+            <input type="submit" value="Submit">
           </form>
         </div>
-        <div class="col-md-3"></div>
       </div>
     </div>
     <!-- partial -->
@@ -184,7 +122,7 @@
     <script src='https://cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.1/morris.min.js'></script><script  src="./script.js"></script>
 
   </body>
-</html>
+
   <style>
     @charset "UTF-8";
     /*!
@@ -210,11 +148,11 @@
       width: 100%;
     }
 
-    {% comment %} #page-wrapper {
+    #page-wrapper {
       padding: 0 15px;
       min-height: 568px;
-      background-color: #fff;
-    } {% endcomment %}
+      background-color: #e7e7e7;
+    }
 
     @media (min-width: 768px) {
       #page-wrapper {
@@ -332,7 +270,7 @@
         margin-top: 51px;
       }
 
-    .navbar-top-links .dropdown-messages,
+      .navbar-top-links .dropdown-messages,
     .navbar-top-links .dropdown-tasks,
     .navbar-top-links .dropdown-alerts {
         margin-left: auto;
@@ -343,27 +281,6 @@
       background-color: transparent;
       transition: all 0.5s;
     }
-
-    .btn-primary.btn-outline {
-      color: #428bca;
-    }
-
-    .btn-success.btn-outline {
-      color: #5cb85c;
-    }
-
-    .btn-info.btn-outline {
-      color: #5bc0de;
-    }
-
-    .btn-warning.btn-outline {
-      color: #f0ad4e;
-    }
-
-    .btn-danger.btn-outline {
-      color: #d9534f;
-    }
-
     *, *:before, *:after {
       -moz-box-sizing: border-box;
       -webkit-box-sizing: border-box;
@@ -389,113 +306,38 @@
       color: #384047;
       font-size: 1rem;
     }
-      
-    input[type="text"],
-    input[type="password"],
-    input[type="date"],
-    input[type="datetime"],
-    input[type="email"],
-    input[type="number"],
-    input[type="search"],
-    input[type="tel"],
-    input[type="time"],
-    input[type="url"],
-    textarea,
-    select {
-      background: rgba(255,255,255,0.1);
-      border: none;
-      font-size: 14px;
-      height: auto;
-      margin: 0;
-      outline: 0;
-      padding: 15px;
-      width: 100%;
-      background-color: #e8eeef;
-      color: #8a97a0;
-      box-shadow: 0 1px 0 rgba(0,0,0,0.03) inset;
-      margin-bottom: 30px;
-    }
-
-    input[type="radio"],
-    input[type="checkbox"] {
-      margin: 0 4px 8px 0;
-    }
-
-    select {
-      padding: 6px;
-      height: 28px;
-      border-radius: 2px;
-    }
-
-    button {
-      padding: 17px 37px 16px 37px;
-      color: #FFF;
-      background-color: #47AB11;
-      font-size: 18px;
-      text-align: center;
-      font-style: normal;
-      border-radius: 5px;
-      width: 100%;
-      border: 1px solid #3ac162;
-      border-width: 1px 1px 3px;
-      box-shadow: 0 -1px 0 rgba(255,255,255,0.1) inset;
-      margin-bottom: 10px;
-    }
-
-    fieldset {
-      margin-bottom: 5px;
-      border: none;
-    }
-
-    legend {
-      font-size: 1.4em;
-      margin-bottom: 10px;
-    }
-
-    label {
-      display: block;
-      margin-bottom: 8px;
-    }
-
-    label.light {
-      font-weight: 300;
-      display: inline;
-    }
-
-    .number {
-      background-color: #47AB11;
-      color: #fff;
-      height: 30px;
-      width: 30px;
-      display: inline-block;
-      font-size: 0.8em;
-      margin-right: 4px;
-      line-height: 30px;
-      text-align: center;
-      text-shadow: 0 1px 0 rgba(255,255,255,0.2);
-      border-radius: 100%;
-    }
 
     @media screen and (min-width: 480px) {
 
       form {
-        max-width: 480px;
+        max-width: 300px;
       }
 
     }
-
-    .col-md-auto{
+    {% comment %} .col-md-auto{
       padding: 5px;
-      background: #21a860;
       height: 100%;
     }
+    .alert{
+      padding-left: 5px;
+      margin-right: 5px;
+    } {% endcomment %}
+    .col-md-3{
+      background:  #f4f7f8;
+      height: 1500px;
+    }
+    .col-md-6{
+      padding: 5px;
+      border-top-style: solid;
+      border-top-color: #FFF;
+      height: 100%
+    }
+
   </style>
 
   <script>
     $(function() {
-
-        $('#side-menu').metisMenu();
-
+      $('#side-menu').metisMenu();
     });
 
     // Loads the correct sidebar on window load, collapses the sidebar on window resize.
@@ -529,3 +371,4 @@
         }
     });
   </script>
+</html>

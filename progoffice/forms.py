@@ -98,6 +98,11 @@ class PartialTeacherForm(forms.ModelForm):
         return cd
 
 
+class TeacherAttendanceForm(forms.Form):
+    face = forms.ImageField()
+    # finger_print = forms.ImageField()
+
+
 class StudentForm(forms.ModelForm):
     # reg_no = forms.CharField(widget=forms.TextInput(
     #     attrs={'class': 'form-control form-control-sm'}

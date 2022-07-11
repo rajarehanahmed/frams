@@ -19,7 +19,7 @@
       <!-- Navigation-->
       <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0">
         <div class="navbar-header">
-          <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".navbar-collapse"><span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button><a class="navbar-brand" href="index.html">F R A M S</a>
+          <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".navbar-collapse"><span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button><a class="navbar-brand" href={% url 'office_home' %}>F R A M S</a>
         </div>
         <!-- /Navigation Bar Notification-->
         <ul class="nav navbar-top-links navbar-right">
@@ -62,7 +62,7 @@
                 <ul class="nav nav-second-level">
                   <li><a href={% url 'add_teacher' %}>Add Teacher</a></li>
                   <li><a href={% url 'pending_registrations' %}>Pending Registration</a></li>
-                  <li><a href="#">Mark Check In/Out</a></li>
+                  <li><a href={% url 'mark_teacher_attendance' %}>Mark Check In/Out</a></li>
                 </ul>
               </li>
               <li><a href="#"><i class="fa fa-users"></i> Student<span class="fa arrow"></span></a>
@@ -77,8 +77,18 @@
                   <li><a href="#">Student Reports</a></li>
                 </ul>
               </li>
-              <li><a href="#"><i class="fa fa-info-circle"></i> About Us</a></li>
-              <li><a href="#"><i class="fa fa-phone-square"></i> Contact Us</a></li>
+              <li><a href="#"><i class="fa fa-file-text"></i> About Us<span class="fa arrow"></span></a>
+                <ul class="nav nav-second-level">
+                  <li><a href="https://rajarehanahmed.github.io/WEHomepage"><i class="fa fa-user-secret"></i> Raja Rehan Ahmed</a></li>
+                  <li><a href="https://jdshex.github.io/FRAMS"><i class="fa fa-user-secret"></i> Sheikh Muhammad Jawad</a></li>
+                </ul>
+              </li>
+              <li><a href="#"><i class="fa fa-envelope"></i> Contact Us<span class="fa arrow"></span></a>
+                <ul class="nav nav-second-level">
+                  <li><a href="mailto:rehan.bscs4028@iiu.edu.pk"><i class="fa fa-user-secret"></i> Raja Rehan Ahmed</a></li>
+                  <li><a href="mailto:muhammad.bscs3965@iiu.edu.pk"><i class="fa fa-user-secret"></i> Sheikh Muhammad Jawad</a></li>
+                </ul>
+              </li>
             </ul>
           </div>
         </div>
