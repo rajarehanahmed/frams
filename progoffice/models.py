@@ -1,10 +1,5 @@
-from email.policy import default
-from tkinter import Image
 from django.db import models
-from django.db.models.signals import post_delete
 from django.contrib.auth.models import User
-from django.dispatch import receiver
-from pandas import notnull
 
 # Create your models here.
 
@@ -84,6 +79,7 @@ class Teacher(models.Model):
     img1 = models.ImageField(upload_to='teachers', default="")
     img2 = models.ImageField(upload_to='teachers', default="")
     img3 = models.ImageField(upload_to='teachers', default="")
+    face_encodings = models.BinaryField(null=True)
 
     def __str__(self):
         if self.teacher_status == 'V':
@@ -100,17 +96,8 @@ class TeacherAttendance(models.Model):
     checkin_image = models.ImageField(upload_to='teacher_attendance', default='')
     checkout_image = models.ImageField(upload_to='teacher_attendance', default='', null=True)
 
-    def __str__(self):
-        return self.teacher.teacher_name
-
-    @receiver(post_delete, sender=Image)
-    def post_save_image(sender, instance, *args, **kwargs):
-        """ Clean Old Image file """
-        try:
-            instance.checkin_image.delete(save=False)
-            instance.checkout_image.delete(save=False)
-        except:
-            pass
+    # def __str__(self):
+    #     return self.teacher.teacher_name
 
 
 class Enrollment(models.Model):

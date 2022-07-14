@@ -1,3 +1,9 @@
+import base64
+from cgi import test
+from mimetypes import encodings_map
+import pickle
+from xml.dom.minidom import TypeInfo
+from cv2 import waitKey
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.contrib.sites.shortcuts import get_current_site
@@ -6,6 +12,7 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes
 from django.utils.encoding import force_str
 from django.core.mail import EmailMessage, send_mail
+from pandas import date_range
 from frams.tokens import generate_token
 from frams import settings
 from django.contrib.auth.models import User
@@ -17,8 +24,7 @@ from .forms import StudentForm, TeacherAttendanceForm, TeacherForm, UserForm
 import cv2
 import numpy as np
 import face_recognition
-import os
-from datetime import datetime
+from datetime import datetime, date
 
 # Create your views here.
 
@@ -41,38 +47,129 @@ def addTeacher(request):
 
                 if user_form.is_valid():
                     user = user_form.save()
-                    # user = User.objects.get(username=user_form.cleaned_data['username'])
-
-                    # if user_form.cleaned_data['password'] == p1:
+                    user.is_active = False
                     teacher  = Teacher(user_id=user)
                     teacher_form = TeacherForm(request.POST, request.FILES, instance=teacher)
 
                     if teacher_form.is_valid():
                         teacher_form.save()
-                        # Sending Confirmation Email
-                        current_site = get_current_site(request)
-                        email_subject = "Confirm your email @ FRAMS - Login!!"
-                        message2 = render_to_string("authentication/email_confirmation.html", {
-                            'email': user.email,
-                            'domain': current_site.domain,
-                            'uid': force_str(urlsafe_base64_encode(force_bytes(user.pk))),
-                            'token': generate_token.make_token(user)
-                        })
-                        email = EmailMessage(email_subject, message2, settings.EMAIL_HOST_USER, [user.email])
-                        email.fail_silently = True
-                        email.send()
 
-                        messages.success(request, 'Teacher Registered Successfully, Please Ask the Teacher to Verify their Email. Thank you!')
-                        return redirect('index')
+                        path = 'media/teachers'
+                        fileName = teacher_form.cleaned_data.get('img1')
+                        img = cv2.imread(f'{path}/{fileName}')
+                        img = cv2.resize(img, (0, 0), None, 0.25, 0.25)
+                        # img = cv2.resize(img,(224,224),fx=0,fy=0, interpolation = cv2.INTER_CUBIC)
+                        try:
+                            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+                        except:
+                            messages.error(request, "Please Upload a Valid Picture!")
+                            context = {
+                                'teacher_form': teacher_form,
+                                'user_form': user_form
+                            }
+                            return render(request, 'progoffice/add_teacher.html', context)
+                        try:
+                            faces = face_recognition.face_locations(img)
+                        except:
+                            messages.error(request, "Please Upload a Clear Picture!")
+                            context = {
+                                'teacher_form': teacher_form,
+                                'user_form': user_form
+                            }
+                            return render(request, 'progoffice/add_teacher.html', context)
+                        if len(faces) < 1:
+                            user.delete()
+                            teacher.delete()
+                            messages.error(request, "No Face Detected, Please Upload a Clear Picture")
+                            context = {
+                                'teacher_form': teacher_form,
+                                'user_form': user_form
+                            }
+                            return render(request, 'progoffice/add_teacher.html', context)
+                        elif len(faces) > 1:
+                            user.delete()
+                            teacher.delete()
+                            messages.error(request, "Multiple Faces Detected, Please Upload a Picture Containing only the Users Face")
+                            context = {
+                                'teacher_form': teacher_form,
+                                'user_form': user_form
+                            }
+                            return render(request, 'progoffice/add_teacher.html', context)
+                        else:
+                            encodings = face_recognition.face_encodings(img, faces)[0]
+                            print('Encodings Stored*********         : ', encodings)
+                            np_bytes = pickle.dumps(encodings)
+                            np_base64 = base64.b64encode(np_bytes)
+                            teacher.face_encodings = np_base64
+                            teacher.save()
+
+                        # # for face in facesCurFrame:
+                        # #     y1, x2, y2, x1 = face
+                        # #     # y1, x2, y2, x1 = y1 * 4, x2 * 4, y2 * 4, x1 * 4
+                        # #     cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                        # # img = cv2.resize(img, (1080, 720))
+                        # # cv2.imshow("Image", img)
+                        # # cv2.waitKey(0)
+                        # print('NoOfFaces in counter: ', len(facesCurFrame))
+                        # encodings_known = face_recognition.face_encodings(imgS, facesCurFrame)
+                        # print(encodings_known)
+
+                        # path = 'media'
+                        # name = 'test.jpg'
+                        # imgTest = cv2.imread(f'{path}/{name}')
+                        # imgS = cv2.resize(imgTest, (0, 0), None, 0.25, 0.25)
+                        # imgS = cv2.cvtColor(imgS, cv2.COLOR_BGR2RGB)
+                        # facesTestFrame = face_recognition.face_locations(imgS)
+                        # # for face in facesCurFrame:
+                        # #     y1, x2, y2, x1 = face
+                        # #     # y1, x2, y2, x1 = y1 * 4, x2 * 4, y2 * 4, x1 * 4
+                        # #     cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                        # # img = cv2.resize(img, (1080, 720))
+                        # # cv2.imshow("Image", img)
+                        # # cv2.waitKey(0)
+
+                        # print('NoOfFaces in counter: ', len(facesTestFrame))
+                        # encodings_test = face_recognition.face_encodings(imgS, facesTestFrame)
+                        # print(encodings_test)
+
+                        # for encodeFace, faceLoc in zip(encodings_known, facesCurFrame):
+                        #     matches = face_recognition.compare_faces(encodings_test, encodeFace, 0.5)
+                        #     faceDis = face_recognition.face_distance(encodings_test, encodeFace)
+                        # # print(faceDis)
+                        #     matchIndex = np.argmin(faceDis)
+
+                        #     if matches[matchIndex]:
+                        #         print('matched')
+                        #         y1, x2, y2, x1 = faceLoc
+                        #         # y1, x2, y2, x1 = y1 * 4, x2 * 4, y2 * 4, x1 * 4
+                        #         cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 2)
+
+                        # img = cv2.resize(img, (1080, 720))
+                        # cv2.imshow("test", img)
+                        # cv2.waitKey(0)
+                        #     #     counter += 1
+                        #     #     name = classNames[matchIndex].upper()
+                        #     #     print (name, counter)
+
+                            # Sending Confirmation Email
+                            current_site = get_current_site(request)
+                            email_subject = "Confirm your email @ FRAMS - Login!!"
+                            message2 = render_to_string("authentication/email_confirmation.html", {
+                                'email': user.email,
+                                'domain': current_site.domain,
+                                'uid': force_str(urlsafe_base64_encode(force_bytes(user.pk))),
+                                'token': generate_token.make_token(user)
+                            })
+                            email = EmailMessage(email_subject, message2, settings.EMAIL_HOST_USER, [user.email])
+                            email.fail_silently = True
+                            email.send()
+
+                            messages.success(request, 'Teacher Registered Successfully, Please Ask the Teacher to Verify their Email. Thank you!')
+                            return redirect('index')
 
                     else:
                         user.delete()
                         return render(request, 'progoffice/add_teacher.html', {'user_form': user_form, 'teacher_form': teacher_form})
-
-                    # else:
-                    #     user.delete()
-                    #     messages.error(request, 'Passwords do not match')
-                    #     return render(request, 'progoffice/add_teacher.html', {'user_form': user_form, 'teacher_form': TeacherForm()})
 
                 else:
                     return render(request, 'progoffice/add_teacher.html', {'user_form': user_form, 'teacher_form': TeacherForm(request.POST, request.FILES)})
@@ -92,7 +189,6 @@ def addTeacher(request):
 
 
 def pendingRegistrations(request):
-    User.objects.get(email='rajarehan.ahmd@gmail.com').delete()
     if request.user.is_authenticated:
         if request.user.is_superuser:
             if request.method == "POST":
@@ -218,6 +314,8 @@ def markTeacherAttendance(request):
     if request.method == 'POST':
         form = TeacherAttendanceForm(request.POST, request.FILES)
         if form.is_valid():
+            now = datetime.now()
+            print('Year: ', now.year, ' Month: ', now.month, ' Day: ', now.day)
             facePic = form.cleaned_data.get('face')
             attendance = TeacherAttendance(checkin_image=facePic)
             attendance.save()
@@ -225,42 +323,63 @@ def markTeacherAttendance(request):
             path = 'media/teacher_attendance'
             img = cv2.imread(f'{path}/{facePic}')
             # imgS = cv2.resize(img, (0, 0), None, 0.25, 0.25)
-            imgS = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-
-            facesCurFrame = face_recognition.face_locations(imgS)
-            print('NoOfFaces in counter: ', len(facesCurFrame))
-            # if len(facesCurFrame) = 1:
-
-            encodesCurFrame = face_recognition.face_encodings(imgS, facesCurFrame)
-            print(encodesCurFrame)
-            cap = cv2.VideoCapture(0)
-            if (cap.isOpened()== False):
-                print("Error opening video stream or file")
-            # Read until video is completed
-            while(cap.isOpened()):
-                # Capture frame-by-frame
-                ret, frame = cap.read()
-                if ret == True:
-                    # Display the resulting frame
-                    cv2.imshow('Frame',frame)
-                    # Press Q on keyboard to  exit
-                    if cv2.waitKey(25) & 0xFF == ord('q'):
-                        break
-                # Break the loop
-                else:
-                    break
-            # When everything done, release the video capture object
-            cap.release()
-            # Closes all the frames
-            cv2.destroyAllWindows
+            try:
+                img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+                faces = face_recognition.face_locations(img)
+            except:
+                messages.error(request, 'Error processing the image!')
+                return render(request, 'progoffice/teacher_attendance.html', {'form': form})
             
-            # cv2.imshow('Webcam', img)
-            # cv2.waitKey(2000)
+            if len(faces) < 1:
+                messages.error(request, 'No Face Detected!')
+                return render(request, 'progoffice/teacher_attendance.html', {'form': form})
+            elif len(faces) > 1:
+                messages.error(request, 'Multiple Faces Detected!')
+                return render(request, 'progoffice/teacher_attendance.html', {'form': form})
+            else:
+                encodings_test = face_recognition.face_encodings(img, faces)
 
+                encodings_known = np.array([])
+                pks = []
+                for obj in Teacher.objects.all():
+                    np_bytes = base64.b64decode(obj.face_encodings)
+                    print('Type: ', type(obj.user_id))
+                    pks.append(obj.user_id)
+                    encodings_known = np.append(encodings_known, pickle.loads(np_bytes))
 
+                matches = face_recognition.compare_faces(encodings_known, encodings_test, 0.5)
+                faceDis = face_recognition.face_distance(encodings_known, encodings_test)
+                
+                print('Face Distance: ', faceDis)
+                matchIndex = np.argmin(faceDis)
 
-            messages.success(request, 'Attendance Marked Successfully')
-            return render(request, 'progoffice/teacher_attendance.html', {'form': TeacherAttendanceForm()})
+                if matches[matchIndex]:
+                    print('Matched: ', pks[matchIndex])
+                    teacher = Teacher.objects.get(user_id=pks[matchIndex])
+                    try:
+                        now = datetime.now()
+                        alreadyCheckedIn = TeacherAttendance.objects.get(teacher=teacher, checkin_time__year=now.year, checkin_time__month=now.month, checkin_time__day=now.day)
+                    except:
+                        alreadyCheckedIn = False
+                    if alreadyCheckedIn is not False:
+                        if alreadyCheckedIn.checkout_time is not None:
+                            attendance.delete()
+                            messages.warning(request, 'User has already checked out!')
+                            return render(request, 'progoffice/teacher_attendance.html', {'form': TeacherAttendanceForm()})
+                        else:
+                            alreadyCheckedIn.checkout_image = attendance.checkin_image
+                            attendance.delete()
+                            alreadyCheckedIn.checkout_time = datetime.now()
+                            alreadyCheckedIn.save()
+                            messages.success(request, 'User checked out Successfully')
+                            return render(request, 'progoffice/teacher_attendance.html', {'form': TeacherAttendanceForm()})
+                    else:
+                        attendance.teacher = teacher
+                        attendance.checkin_time = datetime.now()
+                        attendance.save()
+                        messages.success(request, 'User checked in Successfully')
+                        return render(request, 'progoffice/teacher_attendance.html', {'form': TeacherAttendanceForm()})
+
         else:
             return render(request, 'progoffice/teacher_attendance.html', {'form': form})
     return render(request, 'progoffice/teacher_attendance.html', {'form': TeacherAttendanceForm()})

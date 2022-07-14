@@ -1,10 +1,5 @@
-from dataclasses import field
-import email
-from operator import contains
 import re
-from tkinter import Widget
 from django import forms
-from numpy import number
 from .models import Student, Teacher
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
