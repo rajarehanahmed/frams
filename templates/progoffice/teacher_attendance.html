@@ -1,402 +1,48 @@
-{% load static %}
+{% extends 'base.html' %}
 
-<!DOCTYPE html>
-<html lang="en" >
-  <head>
-      <meta charset="UTF-8">
-      <title>Teacher Attendance</title>
-      <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1"><link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css'>
-    <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/metisMenu/2.2.0/metisMenu.min.css'>
-    <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/timelinejs/2.36.0/css/timeline.css'>
-    <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.1/morris.css'>
-    <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.min.css'><link rel="stylesheet" href="./style.css">
+{% block title %}Teacher Attendance{% endblock title %}
 
-  </head>
-  <body>
-    <!-- partial:index.partial.html -->
-    <div id="wrapper">
-      <!-- Navigation-->
-      <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0">
-        <div class="navbar-header">
-          <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".navbar-collapse"><span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button><a class="navbar-brand" href="index.html">F R A M S</a>
-        </div>
-        <!-- /Navigation Bar Notification-->
-        <ul class="nav navbar-top-links navbar-right">
-          <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#"><i class="fa fa-bell fa-fw"></i><i class="fa fa-caret-down"></i></a>
-            <ul class="dropdown-menu dropdown-alerts">
-              <li><a href="#">
-                  <div><i class="fa fa-comment fa-fw"></i> New Comment<span class="pull-right text-muted small">4 minutes ago</span></div></a></li>
-              <li class="divider"></li>
-              <li><a href="#">
-                  <div><i class="fa fa-twitter fa-fw"></i> 3 New Followers<span class="pull-right text-muted small">12 minutes ago</span></div></a></li>
-              <li class="divider"></li>
-              <li><a href="#">
-                  <div><i class="fa fa-envelope fa-fw"></i> Message Sent<span class="pull-right text-muted small">4 minutes ago</span></div></a></li>
-              <li class="divider"></li>
-              <li><a href="#">
-                  <div><i class="fa fa-tasks fa-fw"></i> New Task<span class="pull-right text-muted small">4 minutes ago</span></div></a></li>
-              <li class="divider"></li>
-              <li><a href="#">
-                  <div><i class="fa fa-upload fa-fw"></i> Server Rebooted<span class="pull-right text-muted small">4 minutes ago</span></div></a></li>
-              <li class="divider"></li>
-              <li><a class="text-center" href="#"><strong>See All Alerts</strong><i class="fa fa-angle-right"></i></a></li>
-            </ul>
-          </li>
-          <!-- /Navigation Bar Profile-->
-          <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#"><i class="fa fa-user fa-fw"></i><i class="fa fa-caret-down"></i></a>
-            <ul class="dropdown-menu dropdown-user">
-              <li><a href="/admin"><i class="fa fa-gear fa-fw"></i> Settings</a></li>
-              <li class="divider"></li>
-              <li><a href={% url 'signout' %}><i class="fa fa-sign-out fa-fw"></i> Logout</a></li>
-            </ul>
-          </li>
-        </ul>
-        <!-- /Side Bar-->
-        <div class="navbar-default sidebar" role="navigation">
-          <div class="sidebar-nav navbar-collapse">
-            <ul class="nav" id="side-menu">
-              <li><a href={% url 'office_home' %}><i class="fa fa-home"></i> Home</a></li>
-              <li><a href="/admin"><i class="fa fa-cog"></i> Admin Panel</a></li>
-              <li><a href="#"><i class="fa fa-user-plus"></i> Teacher<span class="fa arrow"></span></a>
-                <ul class="nav nav-second-level">
-                  <li><a href={% url 'add_teacher' %}>Add Teacher</a></li>
-                  <li><a href={% url 'pending_registrations' %}>Pending Registration</a></li>
-                  <li><a href="#">Mark Check In/Out</a></li>
-                </ul>
-              </li>
-              <li><a href="#"><i class="fa fa-users"></i> Student<span class="fa arrow"></span></a>
-                <ul class="nav nav-second-level">
-                  <li><a href={% url 'add_student' %}>Add Student</a></li>
-                  <li><a href="#">Mark Attendance</a></li>
-                </ul>
-              </li>
-              <li><a href="#"><i class="fa fa-file-text"></i> Reports<span class="fa arrow"></span></a>
-                <ul class="nav nav-second-level">
-                  <li><a href="#">Teacher Report</a></li>
-                  <li><a href="#">Student Reports</a></li>
-                </ul>
-              </li>
-              <li><a href="#"><i class="fa fa-file-text"></i> About Us<span class="fa arrow"></span></a>
-                <ul class="nav nav-second-level">
-                  <li><a href="https://rajarehanahmed.github.io/WEHomepage"><i class="fa fa-user-secret"></i> Raja Rehan Ahmed</a></li>
-                  <li><a href="https://jdshex.github.io/FRAMS"><i class="fa fa-user-secret"></i> Sheikh Muhammad Jawad</a></li>
-                </ul>
-              <li><a href="#"><i class="fa fa-envelope"></i> Contact Us<span class="fa arrow"></span></a>
-                <ul class="nav nav-second-level">
-                  <li><a href="mailto:rehan.bscs4028@iiu.edu.pk"><i class="fa fa-user-secret"></i> Raja Rehan Ahmed</a></li>
-                  <li><a href="mailto:muhammad.bscs3965@iiu.edu.pk"><i class="fa fa-user-secret"></i> Sheikh Muhammad Jawad</a></li>
-                </ul>
-            </ul>
-          </div>
-        </div>
-      </nav>
+{% block body %}
+  <div class="row">
+    <div class="col-lg-12">
+      <h1 class="page-header">Teacher Attendance</h1>
     </div>
-
-    <div class="page-wrapper">
-      <div class="row">
-        
-        {% for message in messages %}
-          <div class="alert alert-{{ message.tags }} alert-dismissible" role="alert">
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-            <strong>{{ message }}</strong>
+  </div>
+  <div class="row">
+    <form action={% url 'mark_teacher_attendance' %} method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="col-md-1"></div>
+      <div class="col-md-5">
+        <div class="card" style="width: 18rem;">
+          <img class="card-img-top" src="/media/images/fr_pic.jpg" alt="Face Recognition" width="399" height="265">
+          <div class="card-body">
+            <h5 class="card-title">Card title</h5>
+            <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+            <a href="#" class="btn btn-primary">Go somewhere</a>
           </div>
-        {% endfor %}
-        <h1>Mark Attendance</h1>
-        <form action={% url 'mark_teacher_attendance' %} method="POST" enctype="multipart/form-data">
-          {% csrf_token %}
-          <div class="col-md-3">
-            {% comment %} <image src="/media/images/fr_pic.jpg" width="266" height="177"> {% endcomment %}
-            <div class="card" style="width: 18rem;">
-              <img class="card-img-top" src="/media/images/fr_pic.jpg" alt="Face Recognition" width="266" height="177">
-              <div class="card-body">
-                <h5 class="card-title">Card title</h5>
-                <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                <a href="#" class="btn btn-primary">Go somewhere</a>
-              </div>
-            </div>
-            {{ form }}
-            <br>
-            <input type="submit" value="Submit">
-          </div>
-          <div class="col-md-6">
-            <div class="card" style="width: 18rem;">
-              <img class="card-img-top" src="/media/images/fingerprint_pic.jpg" alt="Fingerprint" width="266" height="177">
-              <div class="card-body">
-                <h5 class="card-title">Card title</h5>
-                <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                <a href="#" class="btn btn-primary">Go somewhere</a>
-              </div>
-            </div>
-          </div>
-        </form>
+        </div>
       </div>
-    </div>
-    <!-- partial -->
-    <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script>
-    <script src='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js'></script>
-    <script src='https://cdnjs.cloudflare.com/ajax/libs/metisMenu/2.2.0/metisMenu.min.js'></script>
-    <script src='https://cdnjs.cloudflare.com/ajax/libs/timelinejs/2.36.0/js/timeline-min.js'></script>
-    <script src='https://cdnjs.cloudflare.com/ajax/libs/raphael/2.1.4/raphael-min.js'></script>
-    <script src='https://cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.1/morris.min.js'></script><script  src="./script.js"></script>
 
-  </body>
+      <div class="col-md-4">
+        <div class="card" style="width: 18rem;">
+          <img class="card-img-top" src="/media/images/fingerprint_pic.jpg" alt="Fingerprint" width="399" height="265">
+          <div class="card-body">
+            <h5 class="card-title">Card title</h5>
+            <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+            <a href="#" class="btn btn-primary">Go somewhere</a>
+          </div>
+        </div>
+      </div>
+        {{ form }}
+        <br>
+        <input type="submit" value="Submit">
+      </div>
+    </form>
+  </div>
+{% endblock body %}
 
-  <style>
-    @charset "UTF-8";
-    /*!
-    * Start Bootstrap - SB Admin 2 Bootstrap Admin Theme (https://startbootstrap.com)
-    * Code licensed under the Apache License v2.0.
-    * For details, see http://www.apache.org/licenses/LICENSE-2.0.
-    */
-    body {
-      background-color: #f8f8f8;
-    }
-
-    .errorlist {
-      font-size: 14px;
-      color: red;
-    }
-  
-    .invalid-feedback {
-      font-size: 14px;
-      color: red;
-    }
-
-    #wrapper {
-      width: 100%;
-    }
-
-    #page-wrapper {
-      padding: 0 15px;
-      min-height: 568px;
-      background-color: #e7e7e7;
-    }
-
-    @media (min-width: 768px) {
-      #page-wrapper {
-        position: inherit;
-        margin: 0 0 0 250px;
-        padding: 0 30px;
-        border-left: 1px solid #e7e7e7;
-      }
-    }
-    .navbar-top-links {
-      margin-right: 0;
-    }
-
-    .navbar-top-links li {
-      display: inline-block;
-    }
-
-    .navbar-top-links li:last-child {
-      margin-right: 15px;
-    }
-
-    .navbar-top-links li a {
-      padding: 15px;
-      min-height: 50px;
-    }
-
-    .navbar-top-links .dropdown-menu li {
-      display: block;
-    }
-
-    .navbar-top-links .dropdown-menu li:last-child {
-      margin-right: 0;
-    }
-
-    .navbar-top-links .dropdown-menu li a {
-      padding: 3px 20px;
-      min-height: 0;
-    }
-
-    .navbar-top-links .dropdown-menu li a div {
-      white-space: normal;
-    }
-
-    .navbar-top-links .dropdown-messages,
-    .navbar-top-links .dropdown-tasks,
-    .navbar-top-links .dropdown-alerts {
-      width: 310px;
-      min-width: 0;
-    }
-
-    .navbar-top-links .dropdown-messages {
-      margin-left: 5px;
-    }
-
-    .navbar-top-links .dropdown-tasks {
-      margin-left: -59px;
-    }
-
-    .navbar-top-links .dropdown-alerts {
-      margin-left: -123px;
-    }
-
-    .navbar-top-links .dropdown-user {
-      right: 0;
-      left: auto;
-    }
-
-    .sidebar .sidebar-nav.navbar-collapse {
-      padding-right: 0;
-      padding-left: 0;
-    }
-
-    .sidebar .sidebar-search {
-      padding: 15px;
-    }
-
-    .sidebar ul li {
-      border-bottom: 1px solid #e7e7e7;
-    }
-
-    .sidebar ul li a.active {
-      background-color: #eee;
-    }
-
-    .sidebar .arrow {
-      float: right;
-    }
-
-    .sidebar .fa.arrow:before {
-      content: "";
-    }
-
-    .sidebar .active > a > .fa.arrow:before {
-      content: "";
-    }
-
-    .sidebar .nav-second-level li,
-    .sidebar .nav-third-level li {
-      border-bottom: 0 !important;
-    }
-
-    .sidebar .nav-second-level li a {
-      padding-left: 37px;
-    }
-
-    .sidebar .nav-third-level li a {
-      padding-left: 52px;
-    }
-
-    @media (min-width: 768px) {
-      .sidebar {
-        z-index: 1;
-        position: absolute;
-        width: 250px;
-        margin-top: 51px;
-      }
-
-      .navbar-top-links .dropdown-messages,
-    .navbar-top-links .dropdown-tasks,
-    .navbar-top-links .dropdown-alerts {
-        margin-left: auto;
-      }
-    }
-    .btn-outline {
-      color: inherit;
-      background-color: transparent;
-      transition: all 0.5s;
-    }
-    *, *:before, *:after {
-      -moz-box-sizing: border-box;
-      -webkit-box-sizing: border-box;
-      box-sizing: border-box;
-    }
-      
-    form {
-      max-width: 250px;
-      margin: 10px auto;
-      padding: 10px 20px;
-      background: #f4f7f8;
-      border-radius: 8px;
-    }
-
-    h1 {
-      margin: 0 0 25px 0;
-      text-align: center;
-    }
-    h2 {
-      text-align: center;
-      font-family: 'Nunito', sans-serif;
-      font-weight: normal;
-      color: #384047;
-      font-size: 1rem;
-    }
-
-    @media screen and (min-width: 480px) {
-
-      form {
-        max-width: 300px;
-      }
-
-    }
-    {% comment %} .col-md-auto{
-      padding: 5px;
-      height: 100%;
-    }
-    .alert{
-      padding-left: 5px;
-      margin-right: 5px;
-    } {% endcomment %}
-    .col-md-3{
-      background:  #f4f7f8;
-      height: 1500px;
-    }
-    .col-md-6{
-      padding: 5px;
-      border-top-style: solid;
-      border-top-color: #FFF;
-      height: 100%
-    }
-
-  </style>
-
+{% block js %}
   <script>
-    $(function () {
-
-      var clicked = false;
-
-      var first = $('#saveData');
-
-      var second = $('#dltData');
-
-
-
-      first.on('click', function () {
-
-          clicked = !clicked;
-
-          if (clicked)
-
-              second.attr('disabled', 'disabled');
-
-          else
-
-              second.removeAttr('disabled');
-
-      });
-
-
-
-      second.on('click', function () {
-
-          clicked = !clicked;
-
-          if (clicked)
-
-              first.attr('disabled', 'disabled');
-
-          else
-
-              first.removeAttr('disabled');
-
-      });
-
-    });
     $(function() {
       $('#side-menu').metisMenu();
     });
@@ -432,4 +78,4 @@
         }
     });
   </script>
-</html>
+{% endblock js %}
