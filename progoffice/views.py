@@ -57,9 +57,9 @@ def addTeacher(request):
                         path = 'media/teachers'
                         fileName = teacher_form.cleaned_data.get('img1')
                         img = cv2.imread(f'{path}/{fileName}')
-                        img = cv2.resize(img, (0, 0), None, 0.25, 0.25)
                         # img = cv2.resize(img,(224,224),fx=0,fy=0, interpolation = cv2.INTER_CUBIC)
                         try:
+                            img = cv2.resize(img, (0, 0), None, 0.25, 0.25)
                             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
                         except:
                             messages.error(request, "Please Upload a Valid Picture!")

@@ -1,3 +1,5 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="en" >
   <head>
@@ -95,22 +97,40 @@
     <div class="page-wrapper">
       <div class="row">
         
-        <div class="col-md-3"></div>
-        <div class="col-md-6">
-          {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} alert-dismissible" role="alert">
-              <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-              <strong>{{ message }}</strong>
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }} alert-dismissible" role="alert">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <strong>{{ message }}</strong>
+          </div>
+        {% endfor %}
+        <h1>Mark Attendance</h1>
+        <form action={% url 'mark_teacher_attendance' %} method="POST" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="col-md-3">
+            {% comment %} <image src="/media/images/fr_pic.jpg" width="266" height="177"> {% endcomment %}
+            <div class="card" style="width: 18rem;">
+              <img class="card-img-top" src="/media/images/fr_pic.jpg" alt="Face Recognition" width="266" height="177">
+              <div class="card-body">
+                <h5 class="card-title">Card title</h5>
+                <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                <a href="#" class="btn btn-primary">Go somewhere</a>
+              </div>
             </div>
-          {% endfor %}
-          <h1>Mark Attendance</h1>
-          <form action={% url 'mark_teacher_attendance' %} method="POST" enctype="multipart/form-data">
-            {% csrf_token %}
-            {{ form }} 
+            {{ form }}
             <br>
             <input type="submit" value="Submit">
-          </form>
-        </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card" style="width: 18rem;">
+              <img class="card-img-top" src="/media/images/fingerprint_pic.jpg" alt="Fingerprint" width="266" height="177">
+              <div class="card-body">
+                <h5 class="card-title">Card title</h5>
+                <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                <a href="#" class="btn btn-primary">Go somewhere</a>
+              </div>
+            </div>
+          </div>
+        </form>
       </div>
     </div>
     <!-- partial -->
@@ -336,6 +356,47 @@
   </style>
 
   <script>
+    $(function () {
+
+      var clicked = false;
+
+      var first = $('#saveData');
+
+      var second = $('#dltData');
+
+
+
+      first.on('click', function () {
+
+          clicked = !clicked;
+
+          if (clicked)
+
+              second.attr('disabled', 'disabled');
+
+          else
+
+              second.removeAttr('disabled');
+
+      });
+
+
+
+      second.on('click', function () {
+
+          clicked = !clicked;
+
+          if (clicked)
+
+              first.attr('disabled', 'disabled');
+
+          else
+
+              first.removeAttr('disabled');
+
+      });
+
+    });
     $(function() {
       $('#side-menu').metisMenu();
     });
