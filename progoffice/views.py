@@ -1,4 +1,5 @@
 import base64
+from itertools import count
 from cgi import test
 from mimetypes import encodings_map
 import pickle
@@ -18,15 +19,14 @@ from frams import settings
 from django.contrib.auth.models import User
 from django.contrib import messages
 
-from .models import PendingRegistration, Student, Teacher, TeacherAttendance
-from .forms import StudentForm, TeacherAttendanceForm, TeacherForm, UserForm
+from .models import Attendance, PendingRegistration, StudentAttendance, Teacher#, TeacherAttendance
+from .forms import StudentForm, TeacherForm, UserForm, TeacherFaceAttendanceForm, TeacherFingerprintAttendanceForm
 
 import cv2
 import numpy as np
 import face_recognition
-from datetime import datetime, date
-
-# Create your views here.
+from datetime import datetime
+from django.db.models import Count, Q
 
 
 def home(request):
@@ -310,76 +310,116 @@ def addStudent(request):
         return redirect('index')
 
 
-def markTeacherAttendance(request):
-    if request.method == 'POST':
-        form = TeacherAttendanceForm(request.POST, request.FILES)
-        if form.is_valid():
-            now = datetime.now()
-            print('Year: ', now.year, ' Month: ', now.month, ' Day: ', now.day)
-            facePic = form.cleaned_data.get('face')
-            attendance = TeacherAttendance(checkin_image=facePic)
-            attendance.save()
-
-            path = 'media/teacher_attendance'
-            img = cv2.imread(f'{path}/{facePic}')
-            # imgS = cv2.resize(img, (0, 0), None, 0.25, 0.25)
-            try:
-                img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-                faces = face_recognition.face_locations(img)
-            except:
-                messages.error(request, 'Error processing the image!')
-                return render(request, 'progoffice/teacher_attendance.html', {'form': form})
+def TeacherAttendance(request):
+    if request.user.is_authenticated:
+        if request.user.is_superuser:
             
-            if len(faces) < 1:
-                messages.error(request, 'No Face Detected!')
-                return render(request, 'progoffice/teacher_attendance.html', {'form': form})
-            elif len(faces) > 1:
-                messages.error(request, 'Multiple Faces Detected!')
-                return render(request, 'progoffice/teacher_attendance.html', {'form': form})
-            else:
-                encodings_test = face_recognition.face_encodings(img, faces)
-
-                encodings_known = np.array([])
-                pks = []
-                for obj in Teacher.objects.all():
-                    np_bytes = base64.b64decode(obj.face_encodings)
-                    print('Type: ', type(obj.user_id))
-                    pks.append(obj.user_id)
-                    encodings_known = np.append(encodings_known, pickle.loads(np_bytes))
-
-                matches = face_recognition.compare_faces(encodings_known, encodings_test, 0.5)
-                faceDis = face_recognition.face_distance(encodings_known, encodings_test)
-                
-                print('Face Distance: ', faceDis)
-                matchIndex = np.argmin(faceDis)
-
-                if matches[matchIndex]:
-                    print('Matched: ', pks[matchIndex])
-                    teacher = Teacher.objects.get(user_id=pks[matchIndex])
-                    try:
-                        now = datetime.now()
-                        alreadyCheckedIn = TeacherAttendance.objects.get(teacher=teacher, checkin_time__year=now.year, checkin_time__month=now.month, checkin_time__day=now.day)
-                    except:
-                        alreadyCheckedIn = False
-                    if alreadyCheckedIn is not False:
-                        if alreadyCheckedIn.checkout_time is not None:
-                            attendance.delete()
-                            messages.warning(request, 'User has already checked out!')
-                            return render(request, 'progoffice/teacher_attendance.html', {'form': TeacherAttendanceForm()})
-                        else:
-                            alreadyCheckedIn.checkout_image = attendance.checkin_image
-                            attendance.delete()
-                            alreadyCheckedIn.checkout_time = datetime.now()
-                            alreadyCheckedIn.save()
-                            messages.success(request, 'User checked out Successfully')
-                            return render(request, 'progoffice/teacher_attendance.html', {'form': TeacherAttendanceForm()})
-                    else:
-                        attendance.teacher = teacher
-                        attendance.checkin_time = datetime.now()
-                        attendance.save()
-                        messages.success(request, 'User checked in Successfully')
-                        return render(request, 'progoffice/teacher_attendance.html', {'form': TeacherAttendanceForm()})
-
+            return render(request, 'progoffice/teacher_attendance.html')
         else:
-            return render(request, 'progoffice/teacher_attendance.html', {'form': form})
-    return render(request, 'progoffice/teacher_attendance.html', {'form': TeacherAttendanceForm()})
+            return HttpResponse('404 - Page Not Found')
+    else:
+        return redirect('index')
+
+    
+def TeacherFaceAttendance(request):
+    if request.user.is_authenticated:
+        if request.user.is_superuser:
+            if request.method == 'POST':
+                dict = Teacher.objects.aggregate(actifs=Count('user_id', filter=Q(user_id__is_active=True)), inactifs=Count('user_id', filter=Q(user_id__is_active=False)))
+                if int(dict.get('actifs')) > 0:
+                
+                    form = TeacherFaceAttendanceForm(request.POST, request.FILES)
+                    if form.is_valid():
+                        now = datetime.now()
+                        print('Year: ', now.year, ' Month: ', now.month, ' Day: ', now.day)
+                        attendance = form.save()
+
+                        path = 'media'
+                        filename = attendance.checkin_img
+                        print(filename)
+                        img = cv2.imread(f'{path}/{filename}')
+
+                        try:
+                            img = cv2.resize(img, None, fx=0.25, fy=0.25)
+                        except:
+                            print('Resize Failed')
+                        try:
+                            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+                            faces = face_recognition.face_locations(img)
+                        except:
+                            messages.error(request, 'Error processing the image!')
+                            return render(request, 'progoffice/teacher_face_attendance.html', {'form': form})
+                        
+                        if len(faces) < 1:
+                            messages.error(request, 'No Face Detected!')
+                            return render(request, 'progoffice/teacher_face_attendance.html', {'form': form})
+                        elif len(faces) > 1:
+                            messages.error(request, 'Multiple Faces Detected!')
+                            return render(request, 'progoffice/teacher_face_attendance.html', {'form': form})
+                        else:
+                            encodings_test = face_recognition.face_encodings(img, faces)
+
+                            encodings_known = np.array([])
+                            pks = []
+                            for obj in Teacher.objects.all():
+                                np_bytes = base64.b64decode(obj.face_encodings)
+                                print('Type: ', type(obj.user_id))
+                                pks.append(obj.user_id)
+                                print('Email: ', obj.user_id.email)
+                                encodings_known = np.append(encodings_known, pickle.loads(np_bytes))
+
+                            matches = face_recognition.compare_faces(encodings_known, encodings_test, 0.5)
+                            faceDis = face_recognition.face_distance(encodings_known, encodings_test)
+                            
+                            print('Face Distance: ', faceDis)
+                            matchIndex = np.argmin(faceDis)
+
+                            if matches[matchIndex]:
+                                print('Matched: ', pks[matchIndex])
+                                teacher = Teacher.objects.get(user_id=pks[matchIndex])
+                                print('Teacher Name: ' + teacher.teacher_name)
+                                now = datetime.now()
+                                try:
+                                    alreadyCheckedIn = Attendance.objects.get(teacher=teacher, checkin_time__year=now.year, checkin_time__month=now.month, checkin_time__day=now.day)
+                                except:
+                                    print('already checkedin is False')
+                                    alreadyCheckedIn = False
+                                if alreadyCheckedIn is not False:
+                                    if alreadyCheckedIn.checkout_time is not None:
+                                        attendance.delete()
+                                        messages.warning(request, 'User has already checked out!')
+                                        return render(request, 'progoffice/teacher_face_attendance.html', {'form': TeacherFaceAttendanceForm()})
+                                    else:
+                                        alreadyCheckedIn.checkout_img = attendance.checkin_img
+                                        attendance.delete()
+                                        alreadyCheckedIn.checkout_time = datetime.now()
+                                        alreadyCheckedIn.save()
+                                        messages.success(request, 'User checked out successfully')
+                                        return render(request, 'progoffice/teacher_face_attendance.html', {'form': TeacherFaceAttendanceForm()})
+                                else:
+                                    attendance.teacher = teacher
+                                    attendance.checkin_time = datetime.now()
+                                    attendance.save()
+                                    messages.success(request, 'User checked in successfully')
+                                    return render(request, 'progoffice/teacher_face_attendance.html', {'form': TeacherFaceAttendanceForm()})
+
+                    else:
+                        return render(request, 'progoffice/teacher_attendance.html', {'form': form})
+                else:
+                    messages.warning(request, 'No users registered. Please register users first!')
+                    return render(request, 'progoffice/teacher_face_attendance.html', {'form': TeacherFaceAttendanceForm()})
+            return render(request, 'progoffice/teacher_face_attendance.html', {'form': TeacherFaceAttendanceForm()})
+        else:
+            return HttpResponse('404 - Page Not Found')
+    else:
+        return redirect('index')
+
+    
+def TeacherFingerprintAttendance(request):
+    if request.user.is_authenticated:
+        if request.user.is_superuser:
+            return render(request, 'progoffice/teacher_fingerprint_attendance.html', {'form': TeacherFingerprintAttendance()})
+        else:
+            return HttpResponse('404 - Page Not Found')
+    else:
+        return redirect('index')

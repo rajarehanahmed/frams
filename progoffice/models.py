@@ -42,7 +42,7 @@ class StudentAttendance(models.Model):
 
 
 class Room(models.Model):
-    room_no = models.IntegerField(max_length=3, primary_key=True)
+    room_no = models.IntegerField(primary_key=True)
 
     def __str__(self):
         return self.room_no
@@ -88,16 +88,25 @@ class Teacher(models.Model):
             return self.teacher_name + " (Permanent)"
 
 
-class TeacherAttendance(models.Model):
-    id = models.AutoField
-    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, null=True)
-    checkin_time = models.DateTimeField(null=True)
-    checkout_time = models.DateTimeField(null=True)
-    checkin_image = models.ImageField(upload_to='teacher_attendance', default='')
-    checkout_image = models.ImageField(upload_to='teacher_attendance', default='', null=True)
+# class TeacherAttendance(models.Model):
+#     id = models.AutoField
+#     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, null=True)
+#     checkin_time = models.DateTimeField(null=True)
+#     checkout_time = models.DateTimeField(null=True)
+#     checkin_img = models.ImageField(upload_to='teacher_attendance', default='')
+#     checkout_img = models.ImageField(upload_to='teacher_attendance', default='', null=True)
 
     # def __str__(self):
-    #     return self.teacher.teacher_name
+    #     return self.teacher.teacher_name + str(self.checkin_time)
+
+
+class Attendance(models.Model):
+    id = models.AutoField
+    teacher = models.OneToOneField(Teacher, on_delete=models.CASCADE, null=True)
+    checkin_img = models.ImageField(upload_to='teacher_attendance', default='')
+    checkout_img = models.ImageField(upload_to='teacher_attendance', default='', null=True)
+    checkin_time = models.DateTimeField(null=True)
+    checkout_time = models.DateTimeField(null=True)
 
 
 class Enrollment(models.Model):

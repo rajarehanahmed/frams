@@ -1,6 +1,6 @@
 import re
 from django import forms
-from .models import Student, Teacher
+from .models import Attendance, Student, StudentAttendance, Teacher#, TeacherAttendance
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 
@@ -93,9 +93,15 @@ class PartialTeacherForm(forms.ModelForm):
         return cd
 
 
-class TeacherAttendanceForm(forms.Form):
-    face = forms.ImageField()
-    # finger_print = forms.ImageField()
+class TeacherFaceAttendanceForm(forms.ModelForm):
+    class Meta:
+        model = Attendance
+        # fields = '__all__'
+        fields = ('checkin_img',)
+
+
+class TeacherFingerprintAttendanceForm(forms.Form):
+    fingerprint = forms.ImageField()
 
 
 class StudentForm(forms.ModelForm):

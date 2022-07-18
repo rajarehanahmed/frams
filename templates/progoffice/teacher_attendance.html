@@ -9,35 +9,28 @@
     </div>
   </div>
   <div class="row">
-    <form action={% url 'mark_teacher_attendance' %} method="POST" enctype="multipart/form-data">
-      {% csrf_token %}
-      <div class="col-md-1"></div>
-      <div class="col-md-5">
-        <div class="card" style="width: 18rem;">
-          <img class="card-img-top" src="/media/images/fr_pic.jpg" alt="Face Recognition" width="399" height="265">
-          <div class="card-body">
-            <h5 class="card-title">Card title</h5>
-            <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-            <a href="#" class="btn btn-primary">Go somewhere</a>
-          </div>
+    <div class="col-md-1"></div>
+    <div class="col-md-5">
+      <div class="card" style="width: 18rem;">
+        <img class="card-img-top" src="/media/images/fr_pic.jpg" alt="Face Recognition" width="399" height="265">
+        <div class="card-body">
+          <h3 class="card-title">Face Recognition Attendance</h3>
+          {% comment %} <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p> {% endcomment %}
+          <a href={% url 'teacher_face_attendance' %} class="btn btn-primary">Mark Attendance</a>
         </div>
       </div>
+    </div>
 
-      <div class="col-md-4">
-        <div class="card" style="width: 18rem;">
-          <img class="card-img-top" src="/media/images/fingerprint_pic.jpg" alt="Fingerprint" width="399" height="265">
-          <div class="card-body">
-            <h5 class="card-title">Card title</h5>
-            <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-            <a href="#" class="btn btn-primary">Go somewhere</a>
-          </div>
+    <div class="col-md-4">
+      <div class="card" style="width: 18rem;">
+        <img class="card-img-top" src="/media/images/fingerprint_pic.jpg" alt="Fingerprint" width="399" height="265">
+        <div class="card-body">
+          <h3 class="card-title">Fingerprint Attendance</h3>
+          {% comment %} <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p> {% endcomment %}
+          <a href={% url 'teacher_fingerprint_attendance' %} class="btn btn-primary">Mark Attendance</a>
         </div>
       </div>
-        {{ form }}
-        <br>
-        <input type="submit" value="Submit">
-      </div>
-    </form>
+    </div>
   </div>
 {% endblock body %}
 
