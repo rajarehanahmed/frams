@@ -11,3 +11,4 @@ admin.site.register(Room)
 admin.site.register(Timetable)
 admin.site.register(StudentAttendance)
 admin.site.register(Attendance)
+# admin.site.head

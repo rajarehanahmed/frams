@@ -5,9 +5,12 @@ from django.dispatch import receiver
 @receiver(post_delete, sender=Teacher)
 def delete_images(sender, instance, **kwargs):
     try:
-        instance.img1.delete(save=False)
-        instance.img2.delete(save=False)
-        instance.img3.delete(save=False)
+        instance.face_img.delete(save=False)
+        instance.right_thumb_img.delete(save=False)
+        instance.right_index_img.delete(save=False)
+        instance.right_middle_img.delete(save=False)
+        instance.right_ring_img.delete(save=False)
+        instance.right_little_img.delete(save=False)
     except:
         pass
 

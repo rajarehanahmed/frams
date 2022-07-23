@@ -71,15 +71,27 @@ class Teacher(models.Model):
     # def getcurrentusername(instance, filename):
     #     return "/teacher/{0}/{1}".format(instance.user_id.username, filename)
         
-    user_id = models.ForeignKey(User, on_delete=models.CASCADE, unique=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     teacher_name = models.CharField(max_length=50)
     teacher_designation = models.CharField(max_length=2, choices=Teacher_designations)
     teacher_status = models.CharField(max_length=1, choices=Teacher_Statuses)
-    created_at = models.DateTimeField(auto_now_add=True)
-    img1 = models.ImageField(upload_to='teachers', default="")
-    img2 = models.ImageField(upload_to='teachers', default="")
-    img3 = models.ImageField(upload_to='teachers', default="")
+    face_img = models.ImageField(upload_to='teachers/faces', default="")
     face_encodings = models.BinaryField(null=True)
+    right_thumb_img = models.ImageField(upload_to='teachers/fingerprints', default="")
+    right_thumb_keypoints = models.BinaryField(null=True)
+    right_thumb_descriptors = models.BinaryField(null=True)
+    right_index_img = models.ImageField(upload_to='teachers/fingerprints', default="")
+    right_index_keypoints = models.BinaryField(null=True)
+    right_index_descriptors = models.BinaryField(null=True)
+    right_middle_img = models.ImageField(upload_to='teachers/fingerprints', default="")
+    right_middle_keypoints = models.BinaryField(null=True)
+    right_middle_descriptors = models.BinaryField(null=True)
+    right_ring_img = models.ImageField(upload_to='teachers/fingerprints', default="")
+    right_ring_keypoints = models.BinaryField(null=True)
+    right_ring_descriptors = models.BinaryField(null=True)
+    right_little_img = models.ImageField(upload_to='teachers/fingerprints', default="")
+    right_little_keypoints = models.BinaryField(null=True)
+    right_little_descriptors = models.BinaryField(null=True)
 
     def __str__(self):
         if self.teacher_status == 'V':
@@ -102,7 +114,7 @@ class Teacher(models.Model):
 
 class Attendance(models.Model):
     id = models.AutoField
-    teacher = models.OneToOneField(Teacher, on_delete=models.CASCADE, null=True)
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, null=True)
     checkin_img = models.ImageField(upload_to='teacher_attendance', default='')
     checkout_img = models.ImageField(upload_to='teacher_attendance', default='', null=True)
     checkin_time = models.DateTimeField(null=True)
@@ -122,7 +134,7 @@ class Enrollment(models.Model):
 
 class PendingRegistration(models.Model):
     id = models.AutoField
-    teacher_id = models.ForeignKey(Teacher, on_delete=models.CASCADE)
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.teacher_id.teacher_name

@@ -58,7 +58,7 @@ class TeacherForm(forms.ModelForm):
     
     class Meta:
         model = Teacher
-        fields = ('teacher_name', 'teacher_designation', 'teacher_status', 'img1', 'img2', 'img3')
+        fields = ('teacher_name', 'teacher_designation', 'teacher_status', 'face_img', 'right_thumb_img', 'right_index_img', 'right_middle_img', 'right_ring_img', 'right_little_img')
 
     def clean(self):
         cd = self.cleaned_data
@@ -93,7 +93,7 @@ class PartialTeacherForm(forms.ModelForm):
         return cd
 
 
-class TeacherFaceAttendanceForm(forms.ModelForm):
+class TeacherAttendanceForm(forms.ModelForm):
     class Meta:
         model = Attendance
         # fields = '__all__'
