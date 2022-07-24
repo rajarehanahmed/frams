@@ -1,61 +1,8 @@
+import datetime
+from tkinter.tix import Tree
 from django.db import models
 from django.contrib.auth.models import User
-
-# Create your models here.
-
-class Student(models.Model):
-    reg_no = models.CharField(max_length=20, primary_key=True)
-    student_name = models.CharField(max_length=50)
-    father_name = models.CharField(max_length=50)
-    email = models.CharField(max_length=50)
-    img1 = models.ImageField(upload_to='students', default="")
-    img2 = models.ImageField(upload_to='students', default="")
-    img3 = models.ImageField(upload_to='students', default="")
-
-
-    def __str__(self):
-        return self.reg_no + ' ' + self.student_name
-
-
-class Course(models.Model):
-    course_code =  models.CharField(max_length=6, primary_key=True)
-    course_name = models.CharField(max_length=50)
-
-    def __str__(self):
-        return self.course_code + " " + self.course_name 
-
-
-class Teacher_Course(models.Model):
-    id = models.AutoField
-    # p = models.ForeignKey(Course, on_delete=models.DO_NOTHING)
-    # q = models.ForeignKey(Course, on_delete=models.DO_NOTHING)
-
-
-class StudentAttendance(models.Model):
-    id = models.AutoField
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)
-    time = models.DateTimeField(auto_now_add=True)
-    # course = models.ForeignKey(Teacher_Course, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return self.student.reg_no + " " + self.student.student_name
-
-
-class Room(models.Model):
-    room_no = models.IntegerField(primary_key=True)
-
-    def __str__(self):
-        return self.room_no
-
-
-class Timetable(models.Model):
-    id = models.AutoField
-    time = models.DateTimeField
-    room = models.ForeignKey(Room, on_delete=models.CASCADE)
-    # course = models.ForeignKey(Teacher_Course, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return self.room.room_no
+from .import myFields
 
 
 class Teacher(models.Model):
@@ -100,6 +47,76 @@ class Teacher(models.Model):
             return self.teacher_name + " (Permanent)"
 
 
+class Attendance(models.Model):
+    id = models.AutoField
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, null=True)
+    checkin_img = models.ImageField(upload_to='teacher_attendance', default='')
+    checkout_img = models.ImageField(upload_to='teacher_attendance', default='', null=True)
+    checkin_time = models.DateTimeField(null=True)
+    checkout_time = models.DateTimeField(null=True)
+
+
+class PendingRegistration(models.Model):
+    id = models.AutoField
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.teacher.teacher_name
+
+
+class Course(models.Model):
+    id = models.AutoField
+    course_code =  models.CharField(max_length=6)
+    course_name = models.CharField(max_length=50)
+    teacher = models.ForeignKey(Teacher, null=True , on_delete=models.SET_NULL)
+
+    def __str__(self):
+        return self.course_code + " " + self.course_name + " " + self.teacher.teacher_name
+
+
+class Room(models.Model):
+    room_no = models.IntegerField(primary_key=True)
+
+    def __str__(self):
+        return str(self.room_no)
+
+
+class Timetable(models.Model):
+    id = models.AutoField
+    day = myFields.DayOfTheWeekField(default="")
+    time = models.TimeField(editable=True, default=datetime.time(16, 00))
+    room = models.ForeignKey(Room, on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, default="")
+
+    def __str__(self):
+        return 'Room:' + str(self.room.room_no) + '  Course: ' + str(self.course)
+
+
+class Student(models.Model):
+    reg_no = models.CharField(max_length=20, primary_key=True)
+    student_name = models.CharField(max_length=50)
+    father_name = models.CharField(max_length=50)
+    # email = models.CharField(max_length=50)
+    face_img = models.ImageField(upload_to='students', default="")
+    courses_enrolled = models.ManyToManyField(Course, null=True)
+    # img2 = models.ImageField(upload_to='students', default="")
+    # img3 = models.ImageField(upload_to='students', default="")
+
+
+    def __str__(self):
+        return self.reg_no + ' ' + self.student_name
+
+
+class StudentAttendance(models.Model):
+    id = models.AutoField
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    time = models.DateTimeField(auto_now_add=True)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, null=True)
+
+    def __str__(self):
+        return self.student.reg_no + " " + self.student.student_name
+
+
 # class TeacherAttendance(models.Model):
 #     id = models.AutoField
 #     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, null=True)
@@ -112,29 +129,15 @@ class Teacher(models.Model):
     #     return self.teacher.teacher_name + str(self.checkin_time)
 
 
-class Attendance(models.Model):
-    id = models.AutoField
-    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, null=True)
-    checkin_img = models.ImageField(upload_to='teacher_attendance', default='')
-    checkout_img = models.ImageField(upload_to='teacher_attendance', default='', null=True)
-    checkin_time = models.DateTimeField(null=True)
-    checkout_time = models.DateTimeField(null=True)
 
 
-class Enrollment(models.Model):
-    id = models.AutoField
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)
-    # course = models.ForeignKey(Teacher_Course, on_delete=models.CASCADE)
-    # course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
-    # teacher_id = models.ForeignKey(Teacher, on_delete=models.CASCADE)
 
-    def __str__(self):
-        return self.student.student_name
+# class Enrollment(models.Model):
+#     id = models.AutoField
+#     student = models.ForeignKey(Student, on_delete=models.CASCADE)
+#     # course = models.ForeignKey(Teacher_Course, on_delete=models.CASCADE)
+#     # course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
+#     # teacher_id = models.ForeignKey(Teacher, on_delete=models.CASCADE)
 
-
-class PendingRegistration(models.Model):
-    id = models.AutoField
-    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return self.teacher_id.teacher_name
+#     def __str__(self):
+#         return self.student.student_name

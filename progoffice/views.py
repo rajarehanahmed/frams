@@ -1,13 +1,10 @@
 import base64
-import copyreg
-from itertools import count
-from cgi import test
-from mimetypes import encodings_map
-from operator import index
+# from mimetypes import encodings_map
+# from operator import index
 import pickle
-from this import d
-from xml.dom.minidom import TypeInfo
-from cv2 import waitKey
+# from this import d
+# from xml.dom.minidom import TypeInfo
+# from cv2 import waitKey
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.contrib.sites.shortcuts import get_current_site
@@ -16,7 +13,7 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes
 from django.utils.encoding import force_str
 from django.core.mail import EmailMessage, send_mail
-from pandas import date_range
+# from pandas import date_range
 from frams.tokens import generate_token
 from frams import settings
 from django.contrib.auth.models import User
@@ -30,18 +27,6 @@ import numpy as np
 import face_recognition
 from datetime import datetime
 from django.db.models import Count, Q
-
-
-# def _pickle_keypoint(keypoint): #  : cv2.KeyPoint
-#     return cv2.KeyPoint, (
-#         keypoint.pt[0],
-#         keypoint.pt[1],
-#         keypoint.size,
-#         keypoint.angle,
-#         keypoint.response,
-#         keypoint.octave,
-#         keypoint.class_id,
-#     )
 
 
 def home(request):

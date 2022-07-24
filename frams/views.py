@@ -47,23 +47,22 @@ def signup(request):
         user_form = UserForm(request.POST)
 
         if user_form.is_valid():
-            user_form.save()
+            user = user_form.save()
 
             try:
-                user = User.objects.get(username=user_form.cleaned_data['username'])
                 user.is_active = False
                 user.save()
             except(User.DoesNotExist):
                 messages.error(request, 'Error creating user: User Object does not exist!')
                 return redirect('signup')
             else:
-                teacher  = Teacher(user_id=user)
+                teacher  = Teacher(user=user)
                 teacher_form = PartialTeacherForm(request.POST, instance=teacher)
 
                 if teacher_form.is_valid():
                     teacher_form.save()
 
-                    pr = PendingRegistration(teacher_id=teacher)
+                    pr = PendingRegistration(teacher=teacher)
                     pr.save()
 
                     messages.success(request, 'Account Created, Please go to Admin for completing the Registration Process. Thank you!')
