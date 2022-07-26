@@ -1,6 +1,6 @@
 import re
 from django import forms
-from .models import Attendance, Student, StudentAttendance, Teacher#, TeacherAttendance
+from .models import Attendance, BulkAttendance, Student, StudentAttendance, Teacher#, TeacherAttendance
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 
@@ -100,10 +100,6 @@ class TeacherAttendanceForm(forms.ModelForm):
         fields = ('checkin_img',)
 
 
-class TeacherFingerprintAttendanceForm(forms.Form):
-    fingerprint = forms.ImageField()
-
-
 class StudentForm(forms.ModelForm):
     # reg_no = forms.CharField(widget=forms.TextInput(
     #     attrs={'class': 'form-control form-control-sm'}
@@ -119,7 +115,7 @@ class StudentForm(forms.ModelForm):
     # ))
     class Meta:
         model = Student
-        fields =  '__all__'
+        fields =  ('reg_no', 'student_name', 'father_name', 'face_img', 'courses_enrolled')
 
     def clean(self):
         cd = self.cleaned_data
@@ -146,3 +142,9 @@ class StudentForm(forms.ModelForm):
         if not (regex.search(nameWithNoDigit) == None):
             self.add_error('father_name', 'Father Name contains special character(s)!')
         return cd
+
+
+class BulkAttendanceForm(forms.ModelForm):
+    class Meta:
+        model = BulkAttendance
+        fields = '__all__'

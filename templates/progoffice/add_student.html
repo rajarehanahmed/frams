@@ -3,18 +3,28 @@
 {% block title %}Register Student{% endblock title %}
 
 {% block alert %}
+
   {% for error in form.non_field_errors %}
-    <div class="alert alert-{{ message.tags }}" role="alert">
+    <div class="alert alert-danger alert-dismissible" role="alert">
       <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
       <span class="sr-only">Error:</span>
-      {{ message }}
+      <strong>{{ error }}</strong>
+    </div>
+  {% endfor %}
+
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible" role="alert">
+      {% if message.tags == "success" %}
+        <span class="glyphicon glyphicon-ok-sign" aria-hidden="true"></span>
+      {% else %}
+        <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+      {% endif %}
+      <strong>{{ message }}</strong>
     </div>
   {% endfor %}
 {% endblock alert %}
 
 {% block body %}
-  <!-- /Body Header-->
-    <div class="row"></div>
     <!-- /Register Teacher-->
     <div class="row">
       <div class="col-md-auto"></div>
@@ -42,40 +52,23 @@
           {{ form.father_name.errors }}
         </div>
         {{ form.father_name }}
-
-        <label class="is-invalid">Student Email:</label>
-        <div class="invalid-feedback">
-          {{ form.email.errors }}
-        </div>
-        {{ form.email }}                            
         
-        <legend><span class="number">2</span>Upload Images</legend>  
-        <br>
-
-        <div class="form-outline mb-4">
-          <label class="form-label mx-2 is-invalid" for="img1">Image 1</label>
-          <div class="invalid-feedback">
-            {{ form.img1.errors }}
-          </div>
-          <div class="form-control form-control-lg">{{ form.img1 }}</div>
+        <label class="is-invalid">Courses Enrolled:</label>
+        <div class="invalid-feedback">
+          {{ form.courses_enrolled.errors }}
         </div>
+        {{ form.courses_enrolled }}
+        
+        
+        <legend><span class="number">2</span>Upload Image</legend>  
         <br>
 
         <div class="form-outline mb-4">
-          <label class="form-label mx-2 is-invalid" for="img1">Image 2</label>
+          <label class="form-label mx-2 is-invalid" for="face_img">Face Image</label>
           <div class="invalid-feedback">
-            {{ form.img2.errors }}
+            {{ form.face_img.errors }}
           </div>
-          <div class="form-control form-control-lg">{{ form.img2 }}</div>         
-        </div>
-        <br>
-
-        <div class="form-outline mb-4">
-          <label class="form-label mx-2 is-invalid" for="img1">Image 3</label>
-          <div class="invalid-feedback">
-            {{ form.img3.errors }}
-          </div>
-          <div class="form-control form-control-lg">{{ form.img3 }}</div>
+          <div class="form-control form-control-lg">{{ form.face_img }}</div>
         </div>
         <br><br>
 

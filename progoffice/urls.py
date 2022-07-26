@@ -8,8 +8,9 @@ urlpatterns = [
     path('completesignup/', views.completeSignup, name='complete_signup'),
     path('pendingregistrations/', views.pendingRegistrations, name='pending_registrations'),
     path('deletependingreg/', views.deletePendingReg, name='delete_pending_reg'),
-    path('teacher-attendance/', views.TeacherAttendance, name='teacher_attendance'),
-    path('teacher-face-attendance/', views.TeacherFaceAttendance, name='teacher_face_attendance'),
-    path('teacher-fingerprint-attendance/', views.TeacherFingerprintAttendance, name='teacher_fingerprint_attendance'),
+    path('teacher-attendance/', views.teacherAttendance, name='teacher_attendance'),
+    path('teacher-face-attendance/', views.teacherFaceAttendance, name='teacher_face_attendance'),
+    path('teacher-fingerprint-attendance/', views.teacherFingerprintAttendance, name='teacher_fingerprint_attendance'),
     path('addstudent/', views.addStudent, name='add_student'),
+    path('student-attendance/', views.studentAttendance, name='student_attendance'),
 ]

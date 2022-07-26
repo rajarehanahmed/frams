@@ -2,6 +2,7 @@ import datetime
 from tkinter.tix import Tree
 from django.db import models
 from django.contrib.auth.models import User
+from datetime import datetime
 from .import myFields
 
 
@@ -14,9 +15,6 @@ class Teacher(models.Model):
         ('P', 'professor'),
         ('AP', 'asst. professor')
     )
-    # instance.user.username
-    # def getcurrentusername(instance, filename):
-    #     return "/teacher/{0}/{1}".format(instance.user_id.username, filename)
         
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     teacher_name = models.CharField(max_length=50)
@@ -74,22 +72,30 @@ class Course(models.Model):
         return self.course_code + " " + self.course_name + " " + self.teacher.teacher_name
 
 
-class Room(models.Model):
+class ClassRoom(models.Model):
     room_no = models.IntegerField(primary_key=True)
 
     def __str__(self):
         return str(self.room_no)
 
 
+class ClassTiming(models.Model):
+    start_time = models.TimeField(editable=True)
+    end_time = models.TimeField(editable=True)
+
+    def __str__(self):
+        return str(self.start_time) + '-' + str(self.end_time)
+
+
 class Timetable(models.Model):
     id = models.AutoField
     day = myFields.DayOfTheWeekField(default="")
-    time = models.TimeField(editable=True, default=datetime.time(16, 00))
-    room = models.ForeignKey(Room, on_delete=models.CASCADE)
+    time = models.ForeignKey(ClassTiming, on_delete=models.CASCADE, null=True)
+    room = models.ForeignKey(ClassRoom, on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE, default="")
 
     def __str__(self):
-        return 'Room:' + str(self.room.room_no) + '  Course: ' + str(self.course)
+        return 'Room' + str(self.room.room_no) + '  :  ' + str(self.time.start_time) + ' - ' + str(self.time.end_time)
 
 
 class Student(models.Model):
@@ -98,9 +104,8 @@ class Student(models.Model):
     father_name = models.CharField(max_length=50)
     # email = models.CharField(max_length=50)
     face_img = models.ImageField(upload_to='students', default="")
-    courses_enrolled = models.ManyToManyField(Course, null=True)
-    # img2 = models.ImageField(upload_to='students', default="")
-    # img3 = models.ImageField(upload_to='students', default="")
+    face_encodings = models.BinaryField(null=True)
+    courses_enrolled = models.ManyToManyField(Course)
 
 
     def __str__(self):
@@ -117,27 +122,11 @@ class StudentAttendance(models.Model):
         return self.student.reg_no + " " + self.student.student_name
 
 
-# class TeacherAttendance(models.Model):
-#     id = models.AutoField
-#     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, null=True)
-#     checkin_time = models.DateTimeField(null=True)
-#     checkout_time = models.DateTimeField(null=True)
-#     checkin_img = models.ImageField(upload_to='teacher_attendance', default='')
-#     checkout_img = models.ImageField(upload_to='teacher_attendance', default='', null=True)
+class BulkAttendance(models.Model):
+    id = models.AutoField
+    time = models.DateTimeField(auto_now_add=True)
+    room1_img = models.ImageField(upload_to=f'student_attendance/{datetime.now().year}/{datetime.now().month}/{datetime.now().day}/room1')
+    room2_img = models.ImageField(upload_to=f'student_attendance/{datetime.now().year}/{datetime.now().month}/{datetime.now().day}/room2')
 
-    # def __str__(self):
-    #     return self.teacher.teacher_name + str(self.checkin_time)
-
-
-
-
-
-# class Enrollment(models.Model):
-#     id = models.AutoField
-#     student = models.ForeignKey(Student, on_delete=models.CASCADE)
-#     # course = models.ForeignKey(Teacher_Course, on_delete=models.CASCADE)
-#     # course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
-#     # teacher_id = models.ForeignKey(Teacher, on_delete=models.CASCADE)
-
-#     def __str__(self):
-#         return self.student.student_name
+    def __str__(self):
+        return str(self.time)

@@ -2,6 +2,7 @@ import base64
 # from mimetypes import encodings_map
 # from operator import index
 import pickle
+import time
 # from this import d
 # from xml.dom.minidom import TypeInfo
 # from cv2 import waitKey
@@ -19,8 +20,8 @@ from frams import settings
 from django.contrib.auth.models import User
 from django.contrib import messages
 
-from .models import Attendance, PendingRegistration, StudentAttendance, Teacher#, TeacherAttendance
-from .forms import StudentForm, TeacherAttendanceForm, TeacherForm, UserForm
+from .models import Attendance, BulkAttendance, ClassTiming, PendingRegistration, ClassRoom, Student, StudentAttendance, Teacher, Timetable#, TeacherAttendance
+from .forms import StudentForm, TeacherAttendanceForm, TeacherForm, UserForm, BulkAttendanceForm
 
 import cv2
 import numpy as np
@@ -153,44 +154,6 @@ def addTeacher(request):
                             teacher.right_ring_descriptors = encoded_descriptors[3]
                             teacher.right_little_descriptors = encoded_descriptors[4]
                             teacher.save()
-
-                            # np_bytes = base64.b64decode(teacher.right_thumb_keypoints)
-                            # points_list = pickle.loads(np_bytes)
-
-                            # fetched_kp_1 = []
-                            # for point in points_list:
-                            #     temp_feature = cv2.KeyPoint(x=point[0][0], y=point[0][1], size=point[1], angle=point[2], response=point[3], octave=point[4], class_id=point[5])
-                            #     # print(temp_feature)
-                            #     fetched_kp_1.append(temp_feature)
-                            # kp_1 = tuple(fetched_kp_1)
-
-                            
-                            # np_bytes = base64.b64decode(teacher.right_thumb_descriptors)
-                            # desc_1 = pickle.loads(np_bytes)
-                            
-                            # print('After*******************')
-                            # print(kp_1)
-                            # print(desc_1)
-
-
-                            # matches = cv2.FlannBasedMatcher({'algorithm': 1, 'trees': 10},
-                            #         {}).knnMatch(descriptors_1, desc_1, k=2)
-    
-                            # match_points = []
-
-                            # for p, q in matches:
-                            #     if p.distance < 0.1 * q.distance:
-                            #         match_points.append(p)
-                            
-                            # keypoints = 0
-                            # if len(keypoints_1) < len(kp_1):
-                            #     keypoints = len(keypoints_1)
-                            # else:
-                            #     keypoints = len(kp_1)
-
-                            # score = len(match_points) / keypoints * 100
-
-                            # print('Score: ', score)
                             
 
                             # Sending Confirmation Email
@@ -332,32 +295,7 @@ def completeSignup(request):
         return redirect('index')
 
 
-def addStudent(request):
-    if request.user.is_authenticated:
-        if request.user.is_superuser:
-            if request.method == 'POST':
-                form = StudentForm(request.POST, request.FILES)
-
-                if form.is_valid():
-                    form.save()
-                    messages.success(request, 'Student Registered Successfully')
-                    return redirect('index')
-                else:
-                    print(form.errors.as_data())
-                    return render(request, 'progoffice/add_student.html', {'form': form})
-            
-            else:    
-                form = StudentForm()
-                return render(request, 'progoffice/add_student.html', {'form': form})
-        
-        else:
-            return HttpResponse('404 - Page Not Found')
-    
-    else:
-        return redirect('index')
-
-
-def TeacherAttendance(request):
+def teacherAttendance(request):
     if request.user.is_authenticated:
         if request.user.is_superuser:
             
@@ -368,7 +306,7 @@ def TeacherAttendance(request):
         return redirect('index')
 
     
-def TeacherFaceAttendance(request):
+def teacherFaceAttendance(request):
     if request.user.is_authenticated:
         if request.user.is_superuser:
             if request.method == 'POST':
@@ -391,19 +329,21 @@ def TeacherFaceAttendance(request):
                             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
                             faces = face_recognition.face_locations(img)
                         except:
+                            attendance.delete()
                             messages.error(request, 'Error processing the image!')
                             return render(request, 'progoffice/teacher_face_attendance.html', {'form': form})
                         
                         if len(faces) < 1:
+                            attendance.delete()
                             messages.error(request, 'No Face Detected!')
                             return render(request, 'progoffice/teacher_face_attendance.html', {'form': form})
                         elif len(faces) > 1:
+                            attendance.delete()
                             messages.error(request, 'Multiple Faces Detected!')
                             return render(request, 'progoffice/teacher_face_attendance.html', {'form': form})
                         else:
                             encodings_test = face_recognition.face_encodings(img, faces)[0]
 
-                            # encodings_known = np.array([])
                             encodeList = []
                             pks = []
                             
@@ -472,7 +412,7 @@ def TeacherFaceAttendance(request):
         return redirect('index')
 
     
-def TeacherFingerprintAttendance(request):
+def teacherFingerprintAttendance(request):
     if request.user.is_authenticated:
         if request.user.is_superuser:
             if request.method == 'POST':
@@ -486,9 +426,14 @@ def TeacherFingerprintAttendance(request):
                         path = 'media'
                         filename = attendance.checkin_img
                         print(filename)
-                        img = cv2.imread(f'{path}/{filename}')
                         sift = cv2.SIFT_create()
-                        keypoints_test, descriptors_test = sift.detectAndCompute(img, None)
+                        try:
+                            img = cv2.imread(f'{path}/{filename}')
+                            keypoints_test, descriptors_test = sift.detectAndCompute(img, None)
+                        except:
+                            attendance.delete()
+                            messages.error(request, 'Error processing the image!')
+                            return render(request, 'progoffice/teacher_fingerprint_attendance.html', {'form': form})
 
                         teacher_fingerprints = {}
                         for obj in Teacher.objects.all():
@@ -634,6 +579,190 @@ def TeacherFingerprintAttendance(request):
                     return render(request, 'progoffice/teacher_fingerprint_attendance.html', {'form': TeacherAttendanceForm()})
             else:
                 return render(request, 'progoffice/teacher_fingerprint_attendance.html', {'form': TeacherAttendanceForm()})
+        else:
+            return HttpResponse('404 - Page Not Found')
+    else:
+        return redirect('index')
+
+
+def addStudent(request):
+    if request.user.is_authenticated:
+        if request.user.is_superuser:
+            if request.method == 'POST':
+                form = StudentForm(request.POST, request.FILES)
+
+                if form.is_valid():
+                    student = form.save()
+
+
+                    # Detecting face in the image and storing encodings in the database
+                    path = 'media/students'
+                    fileName = form.cleaned_data.get('face_img')
+                    img = cv2.imread(f'{path}/{fileName}')
+                    try:
+                        img = cv2.resize(img, (0, 0), None, 0.25, 0.25)
+                        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+                        faces = face_recognition.face_locations(img)
+                    except:
+                        student.delete()
+                        messages.error(request, "Error Processing the image!")
+                        return render(request, 'progoffice/add_student.html', {'form': form})
+                    if len(faces) < 1:
+                        student.delete()
+                        messages.error(request, "No Face Detected, Please Upload a Clear Picture")
+                        return render(request, 'progoffice/add_student.html', {'form': form})
+                    elif len(faces) > 1:
+                        student.delete()
+                        messages.error(request, "Multiple Faces Detected, Please Upload a Picture Containing only the Users Face")
+                        return render(request, 'progoffice/add_student.html', {'form': form})
+                    else:
+                        encodings = face_recognition.face_encodings(img, faces)[0]
+                        print('Encodings Stored*********         : ', encodings)
+                        np_bytes = pickle.dumps(encodings)
+                        np_base64 = base64.b64encode(np_bytes)
+                        student.face_encodings = np_base64
+                        student.save()
+
+
+
+                        messages.success(request, 'Student Registered Successfully')
+                        return render(request, 'progoffice/add_student.html', {'form': StudentForm()})
+                else:
+                    return render(request, 'progoffice/add_student.html', {'form': form})
+            
+            else:    
+                return render(request, 'progoffice/add_student.html', {'form': StudentForm()})
+        
+        else:
+            return HttpResponse('404 - Page Not Found')
+    
+    else:
+        return redirect('index')
+
+
+def studentAttendance(request):
+    if request.user.is_authenticated:
+        if request.user.is_superuser:
+            if request.method == 'POST':
+                form = BulkAttendanceForm(request.POST, request.FILES)
+                if form.is_valid():
+                    bulkAttendance = form.save()
+                    now = datetime.now()
+                    print('Year: ', now.year, ' Month: ', now.month, ' Day: ', now.day)
+
+
+                    
+                    now = datetime.now()
+
+                    curTime = now.time().replace(microsecond=0)
+                    print('Current Time: ', curTime)
+                    
+                    classTime = None
+                    for timing in ClassTiming.objects.all():
+                        if timing.start_time <= curTime <= timing.end_time:
+                            classTime = timing
+                    print('classTime: ', classTime)
+                    print('Weekday: ', now.weekday())
+                    
+                    if classTime is None or now.weekday() > 4:
+                        messages.error(request, 'No class at this time')
+                        return render(request, 'progoffice/student_attendance.html', {'form': BulkAttendanceForm()})
+
+                    if Student.objects.all().count() > 1:
+                        for classroom in ClassRoom.objects.all()[:2]:
+                            timeTable = Timetable.objects.filter(room=classroom, time=classTime)
+                            print('timeTable.count(): ', timeTable.count())
+                            print('Room: ', classroom.room_no)
+                            if timeTable.count() > 1:
+                                messages.error(request, 'Timetable is incorrect')
+                                return render(request, 'progoffice/student_attendance.html', {'form': BulkAttendanceForm()})
+                            elif timeTable.count() != 1:
+                                messages.error(request, f'No class at this time in Room{classroom.room_no}')
+                                pass
+                                # return render(request, 'progoffice/student_attendance.html', {'form': BulkAttendanceForm()})
+                            course = timeTable[0].course
+                            print('Course: ', course)
+                            if course is None:
+                                messages.error(request, f'No course is registered at this time in Room{classroom.room_no}')
+                                pass
+                                # return render(request, 'progoffice/student_attendance.html', {'form': BulkAttendanceForm()})
+                            
+                            students_enrolled = course.student_set.all()
+                            print('Students Enrolled: ', students_enrolled)
+
+                            path = 'media'
+                            filename = getattr(bulkAttendance, f'room{classroom.room_no}_img')
+                            print(filename)
+                            try:
+                                img = cv2.imread(f'{path}/{filename}')
+                                img = cv2.resize(img, None, fx=0.25, fy=0.25)
+                                img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+                                faces = face_recognition.face_locations(img)
+                            except:
+                                bulkAttendance.delete()
+                                messages.error(request, f'Error processing Classroom{classroom.room_no} image!')
+                                return render(request, 'progoffice/teacher_face_attendance.html', {'form': form})
+                            
+                            if len(faces) < 1:
+                                bulkAttendance.delete()
+                                messages.error(request, f'No Faces Detected in Classroom{classroom.room_no}!')
+                                return render(request, 'progoffice/teacher_face_attendance.html', {'form': form})
+                            else:
+                                encodings_test = face_recognition.face_encodings(img, faces)
+
+                                encodings_known = []
+                                pks = []
+
+                                for student in students_enrolled:
+                                    np_bytes = base64.b64decode(student.face_encodings)
+                                    pks.append(student)
+                                    encodings = pickle.loads(np_bytes)
+                                    print('Type of Encodings fetched: ', type(encodings))
+                                    print('Encodings Stored*********         : ', encodings)
+                                    encodings_known.append(encodings)
+                                    print(encodings_known)
+
+                                for encoding in encodings_test:
+                                    matches = face_recognition.compare_faces(encodings_known, encoding, 0.6)
+                                    faceDis = face_recognition.face_distance(encodings_known, encoding)
+                                    
+                                    print('Face Distance: ', faceDis)
+                                    matchIndex = np.argmin(faceDis)
+
+                                    if matches[matchIndex]:
+                                        print('Matched: ', pks[matchIndex])
+
+
+                                        student = pks[matchIndex]
+                                        print('Teacher Name: ' + student.student_name)
+                                        
+                                        try:
+                                            alreadyMarked = StudentAttendance.objects.get(student=student, time__year=now.year, time__month=now.month, time__day=now.day, course=course)
+                                        except:
+                                            print('already Marked is False')
+                                            alreadyMarked = False
+                                        if alreadyMarked is not False:
+                                            messages.warning(request, student.reg_no + ' ' + student.student_name + ' checked in successfully')
+                                            pass
+                                        else:
+                                            attendance = StudentAttendance(student=student, time=now, course=course)
+                                            attendance.save()
+
+                        messages.success(request, 'Attendance marked Successfully')
+                        return render(request, 'progoffice/student_attendance.html', {'form': form})
+                              
+
+
+
+
+                    else:
+                        messages.warning(request, 'No students registered')
+                        return render(request, 'progoffice/student_attendance.html', {'form': form})
+
+                else:
+                    return render(request, 'progoffice/student_attendance.html', {'form': form})
+            else:
+                return render(request, 'progoffice/student_attendance.html', {'form': BulkAttendanceForm()})
         else:
             return HttpResponse('404 - Page Not Found')
     else:
