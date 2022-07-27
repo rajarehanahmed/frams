@@ -665,11 +665,15 @@ def studentAttendance(request):
                     print('Weekday: ', now.weekday())
                     
                     if classTime is None or now.weekday() > 4:
+                        bulkAttendance.delete()
                         messages.error(request, 'No class at this time')
                         return render(request, 'progoffice/student_attendance.html', {'form': BulkAttendanceForm()})
 
                     if Student.objects.all().count() > 1:
+                        counter = 0
                         for classroom in ClassRoom.objects.all()[:2]:
+                            counter += 1
+                            print('Counter: ', counter)
                             timeTable = Timetable.objects.filter(room=classroom, time=classTime)
                             print('timeTable.count(): ', timeTable.count())
                             print('Room: ', classroom.room_no)
@@ -678,13 +682,13 @@ def studentAttendance(request):
                                 return render(request, 'progoffice/student_attendance.html', {'form': BulkAttendanceForm()})
                             elif timeTable.count() != 1:
                                 messages.error(request, f'No class at this time in Room{classroom.room_no}')
-                                pass
+                                continue
                                 # return render(request, 'progoffice/student_attendance.html', {'form': BulkAttendanceForm()})
                             course = timeTable[0].course
                             print('Course: ', course)
                             if course is None:
                                 messages.error(request, f'No course is registered at this time in Room{classroom.room_no}')
-                                pass
+                                continue
                                 # return render(request, 'progoffice/student_attendance.html', {'form': BulkAttendanceForm()})
                             
                             students_enrolled = course.student_set.all()
@@ -742,14 +746,22 @@ def studentAttendance(request):
                                             print('already Marked is False')
                                             alreadyMarked = False
                                         if alreadyMarked is not False:
-                                            messages.warning(request, student.reg_no + ' ' + student.student_name + ' checked in successfully')
-                                            pass
+                                            messages.warning(request, student.reg_no + ' ' + student.student_name + 's attendance already marked')
+                                            
                                         else:
-                                            attendance = StudentAttendance(student=student, time=now, course=course)
+                                            attendance = StudentAttendance(student=student, time=now, course=course, status='P')
                                             attendance.save()
 
-                        messages.success(request, 'Attendance marked Successfully')
-                        return render(request, 'progoffice/student_attendance.html', {'form': form})
+                                for student in students_enrolled:
+                                    if StudentAttendance.objects.filter(student=student, time__year=now.year, time__month=now.month, time__day=now.day, course=course).count() != 1:
+                                        attendance = StudentAttendance(student=student, time=now, course=course, status='A')
+                                        attendance.save()
+                        
+                        if StudentAttendance.objects.filter(time__year=now.year, time__month=now.month, time__day=now.day).count() > 1:
+                            messages.success(request, 'Attendance marked Successfully')
+                            return render(request, 'progoffice/student_attendance.html', {'form': BulkAttendanceForm()})
+
+                        return render(request, 'progoffice/student_attendance.html', {'form': BulkAttendanceForm()})
                               
 
 

@@ -113,10 +113,15 @@ class Student(models.Model):
 
 
 class StudentAttendance(models.Model):
+    Attendance_Statuses = (
+        ('P', 'Present'),
+        ('A', 'Absent'),
+    )
     id = models.AutoField
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     time = models.DateTimeField(auto_now_add=True)
     course = models.ForeignKey(Course, on_delete=models.CASCADE, null=True)
+    status = models.CharField(max_length=1, choices=Attendance_Statuses, null=True)
 
     def __str__(self):
         return self.student.reg_no + " " + self.student.student_name
