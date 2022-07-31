@@ -1,6 +1,6 @@
 import re
 from django import forms
-from .models import Attendance, BulkAttendance, Student, StudentAttendance, Teacher#, TeacherAttendance
+from .models import Attendance, BulkAttendance, Student, Teacher
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 
@@ -35,27 +35,6 @@ class UserForm(UserCreationForm):
 
 
 class TeacherForm(forms.ModelForm):
-    # Teacher_Statuses = (
-    #     ('V', 'visiting'),
-    #     ('P', 'permanent'),
-    # )
-    # Teacher_Designations = (
-    #     ('P', 'professor'),
-    #     ('AP', 'asst. professor')
-    # )
-    # teacher_name = forms.CharField(widget=forms.TextInput(
-    #     attrs={'class': 'form-control form-control-sm'}
-    # ))
-    # teacher_designation = forms.CharField(widget=forms.Select(
-    #     attrs={'class': 'form-select form-control-sm'},
-    #     choices=Teacher_Designations
-    # ))
-    # teacher_status = forms.CharField(widget=forms.Select(
-    #     attrs={'class': 'form-select form-control-sm'},
-    #     choices=Teacher_Statuses
-    # ))
-    
-    
     class Meta:
         model = Teacher
         fields = ('teacher_name', 'teacher_designation', 'teacher_status', 'face_img', 'right_thumb_img', 'right_index_img', 'right_middle_img', 'right_ring_img', 'right_little_img')
@@ -72,6 +51,15 @@ class TeacherForm(forms.ModelForm):
             self.add_error('teacher_name', 'Name contains special character(s)!')
 
         return cd
+    
+    def __init__(self, *args, **kwargs):
+        super(TeacherForm, self).__init__(*args, **kwargs)
+        self.fields['face_img'].required = False
+        self.fields['right_thumb_img'].required = False
+        self.fields['right_index_img'].required = False
+        self.fields['right_middle_img'].required = False
+        self.fields['right_ring_img'].required = False
+        self.fields['right_little_img'].required = False
 
 
 class PartialTeacherForm(forms.ModelForm):
@@ -96,23 +84,14 @@ class PartialTeacherForm(forms.ModelForm):
 class TeacherAttendanceForm(forms.ModelForm):
     class Meta:
         model = Attendance
-        # fields = '__all__'
         fields = ('checkin_img',)
+    
+    def __init__(self, *args, **kwargs):
+        super(TeacherAttendanceForm, self).__init__(*args, **kwargs)
+        self.fields['checkin_img'].label = ""
 
 
 class StudentForm(forms.ModelForm):
-    # reg_no = forms.CharField(widget=forms.TextInput(
-    #     attrs={'class': 'form-control form-control-sm'}
-    #     ))
-    # student_name = forms.CharField(widget=forms.TextInput(
-    #     attrs={'class': 'form-control form-control-sm'}
-    # ))
-    # father_name = forms.CharField(widget=forms.TextInput(
-    #     attrs={'class': 'form-control form-control-sm'}
-    # ))
-    # email = forms.EmailField(widget=forms.EmailInput(
-    #     attrs={'class': 'form-control form-control-sm'}
-    # ))
     class Meta:
         model = Student
         fields =  ('reg_no', 'student_name', 'father_name', 'face_img', 'courses_enrolled')
@@ -148,3 +127,7 @@ class BulkAttendanceForm(forms.ModelForm):
     class Meta:
         model = BulkAttendance
         fields = '__all__'
+
+
+class SearchTeacherForm(forms.Form):
+    pass

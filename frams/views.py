@@ -4,17 +4,16 @@ from django.contrib.auth.models import User
 from . tokens import generate_token
 from django.contrib import messages
 
-# from django.contrib.sites.shortcuts import get_current_site
-# from django.template.loader import render_to_string
-from django.utils.http import urlsafe_base64_decode
-# from django.utils.encoding import force_bytes
+from django.contrib.sites.shortcuts import get_current_site
+from django.template.loader import render_to_string
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes
 from django.utils.encoding import force_str
-# from django.core.mail import EmailMessage, send_mail
+from django.core.mail import EmailMessage, send_mail
+from frams import settings
 
 from progoffice.models import Teacher, PendingRegistration
 from progoffice.forms import LoginForm, UserForm, PartialTeacherForm
-from django.contrib.auth.forms import AuthenticationForm
-# from django.contrib.auth.forms import UserCreationForm
 
 # Create your views here.
 
@@ -49,28 +48,40 @@ def signup(request):
         if user_form.is_valid():
             user = user_form.save()
 
-            try:
-                user.is_active = False
-                user.save()
-            except(User.DoesNotExist):
-                messages.error(request, 'Error creating user: User Object does not exist!')
-                return redirect('signup')
-            else:
-                teacher  = Teacher(user=user)
-                teacher_form = PartialTeacherForm(request.POST, instance=teacher)
+            teacher  = Teacher(user=user)
+            teacher_form = PartialTeacherForm(request.POST, instance=teacher)
 
-                if teacher_form.is_valid():
-                    teacher_form.save()
+            if teacher_form.is_valid():
+                teacher_form.save()
 
+                if teacher.teacher_status == 'V':
                     pr = PendingRegistration(teacher=teacher)
                     pr.save()
 
                     messages.success(request, 'Account Created, Please go to Admin for completing the Registration Process. Thank you!')
-                    return render(request, 'authentication/signup_completed.html')
-
                 else:
-                    user.delete()
-                    return render(request, 'authentication/signup.html', {'user_form': user_form, 'teacher_form': teacher_form})
+                    # Sending Confirmation Email
+                    try:
+                        current_site = get_current_site(request)
+                        email_subject = "Confirm your email @ FRAMS - Login!!"
+                        message2 = render_to_string("authentication/email_confirmation.html", {
+                            'email': user.email,
+                            'domain': current_site.domain,
+                            'uid': force_str(urlsafe_base64_encode(force_bytes(user.pk))),
+                            'token': generate_token.make_token(user)
+                        })
+                        email = EmailMessage(email_subject, message2, settings.EMAIL_HOST_USER, [user.email])
+                        email.send()
+                    except:
+                        messages.error(request, "Sending verification email failed!")
+                        return render(request, 'authentication/signup.html', {'user_form': user_form, 'teacher_form': teacher_form})
+                    
+                    messages.success(request, 'Account Created. Please verify your email by clicking on the verification link sent to you')
+                return render(request, 'authentication/signup_completed.html')
+
+            else:
+                user.delete()
+                return render(request, 'authentication/signup.html', {'user_form': user_form, 'teacher_form': teacher_form})
 
         else:
             print('user_form invalid')
@@ -99,4 +110,5 @@ def activate(request, uidb64, token):
         messages.success(request, 'Email Verified!')
         return render(request, 'authentication/email_verified.html')
     else:
+        messages.success(request, 'Activation Failed! Please try again')
         return render(request, 'authentication/activation_failed.html')

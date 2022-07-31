@@ -17,7 +17,8 @@
         <label class="is-invalid">Email:</label>
         {{ t_user.email }}
 
-        <input hidden id="email" name="email" value="{{ t_user.email }}">               
+        <input hidden id="email" name="email" value="{{ t_user.email }}">
+        <br><br>
       
         <legend><span class="number">2</span>Profile</legend>
         <label class="is-invalid">Name:</label>
@@ -40,33 +41,61 @@
         {{ form.teacher_designation }}
         <br><br>
 
-        <legend><span class="number">3</span>Upload Images</legend>  
-        <br>
+        <legend><span class="number">3</span>Upload Face Image</legend>  
 
         <div class="form-outline mb-4">
-          <label class="form-label mx-2 is-invalid" for="img1">Image 1</label>
+          <label class="form-label mx-2 is-invalid" for="img1">Face</label>
           <div class="invalid-feedback">
-            {{ form.img1.errors }}
+            {{ form.face_img.errors }}
           </div>
-          {{ form.img1 }}
+          {{ form.face_img }}
+        </div>
+        <br><br>
+
+        <legend><span class="number">4</span>Upload Fingerprint Samples</legend>  
+
+        <div class="form-outline mb-4">
+          <label class="form-label mx-2">Right Thumb</label>
+          <div class="invalid-feedback">
+            {{ form.right_thumb_img.errors }}
+          </div>
+          {{ form.right_thumb_img }}
         </div>
         <br>
 
         <div class="form-outline mb-4">
-          <label class="form-label mx-2" for="img1">Image 2</label>
+          <label class="form-label mx-2">Right Index Finger</label>
           <div class="invalid-feedback">
-            {{ form.img2.errors }}
+            {{ form.right_index_img.errors }}
           </div>
-          {{ form.img2 }}
+          {{ form.right_index_img }}
         </div>
         <br>
 
         <div class="form-outline mb-4">
-          <label class="form-label mx-2" for="img1">Image 3</label>
+          <label class="form-label mx-2">Right Middle Finger</label>
           <div class="invalid-feedback">
-            {{ form.img3.errors }}
+            {{ form.right_middle_img.errors }}
           </div>
-          {{ form.img3 }}
+          {{ form.right_middle_img }}
+        </div>
+        <br>
+
+        <div class="form-outline mb-4">
+          <label class="form-label mx-2">Right Ring Finger</label>
+          <div class="invalid-feedback">
+            {{ form.right_ring_img.errors }}
+          </div>
+          {{ form.right_ring_img }}
+        </div>
+        <br>
+
+        <div class="form-outline mb-4">
+          <label class="form-label mx-2">Right Little Finger</label>
+          <div class="invalid-feedback">
+            {{ form.right_little_img.errors }}
+          </div>
+          {{ form.right_little_img }}
         </div>
         <br><br>
 
@@ -348,7 +377,7 @@
 
     label {
       display: block;
-      margin-bottom: 8px;
+      {% comment %} margin-bottom: 8px; {% endcomment %}
     }
 
     label.light {

@@ -4,6 +4,8 @@ from django.db import models
 from django.contrib.auth.models import User
 from datetime import datetime
 from .import myFields
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 
 
 class Teacher(models.Model):
@@ -62,14 +64,17 @@ class PendingRegistration(models.Model):
         return self.teacher.teacher_name
 
 
-class Course(models.Model):
+class Course(models.Model):  
     id = models.AutoField
     course_code =  models.CharField(max_length=6)
     course_name = models.CharField(max_length=50)
     teacher = models.ForeignKey(Teacher, null=True , on_delete=models.SET_NULL)
 
     def __str__(self):
-        return self.course_code + " " + self.course_name + " " + self.teacher.teacher_name
+        if self.teacher is not None:
+            return self.course_code + " | " + self.course_name + " | " + self.teacher.teacher_name
+        else:
+            return self.course_code + " | " + self.course_name
 
 
 class ClassRoom(models.Model):

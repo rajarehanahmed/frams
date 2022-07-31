@@ -2,47 +2,6 @@
 
 {% block title %}Register Teacher{% endblock title %}
 
-{% block js %}
-  <script>
-    $(function() {
-      window.scrollTo(0, 0);
-      $('input').blur()
-      $('#side-menu').metisMenu();
-
-  });
-
-  // Loads the correct sidebar on window load, collapses the sidebar on window resize.
-  // Sets the min-height of #page-wrapper to window size
-  $(function() {
-      $(window).bind("load resize", function() {
-          topOffset = 50;
-          width = (this.window.innerWidth > 0) ? this.window.innerWidth : this.screen.width;
-          if (width < 768) {
-              $('div.navbar-collapse').addClass('collapse');
-              topOffset = 100; // 2-row-menu
-          } else {
-              $('div.navbar-collapse').removeClass('collapse');
-          }
-
-          height = ((this.window.innerHeight > 0) ? this.window.innerHeight : this.screen.height) - 1;
-          height = height - topOffset;
-          if (height < 1) height = 1;
-          if (height > topOffset) {
-              $("#page-wrapper").css("min-height", (height) + "px");
-          }
-      });
-
-      var url = window.location;
-      var element = $('ul.nav a').filter(function() {
-          return this.href == url || url.href.indexOf(this.href) == 0;
-      }).addClass('active').parent().parent().addClass('in').parent();
-      if (element.is('li')) {
-          element.addClass('active');
-      }
-  });
-  </script>
-{% endblock js %}
-
 {% block alert %}
   {% for error in user_form.non_field_errors %}
     <div class="alert alert-danger alert-dismissible" role="alert">
@@ -94,7 +53,7 @@
           </div>
           {{ teacher_form.teacher_name }}
 
-          <label class="is-invalid">Teacher Type:</label>
+          <label class="is-invalid">Teacher Status:</label>
           <div class="invalid-feedback">
             {{ teacher_form.teacher_status.errors }}
           </div>
@@ -107,65 +66,67 @@
           </div>
           {{ teacher_form.teacher_designation }} 
 
-          <legend><span class="number">3</span>Face Image</legend>  
-          <br>
+          <div id="optional">
+            <legend><span class="number">3</span>Upload Face Image</legend>  
+            <br>
 
-          <div class="form-outline mb-4">
-            <label class="form-label mx-2 is-invalid">Face Image</label>
-            <div class="invalid-feedback">
-              {{ teacher_form.face_img.errors }}
+            <div class="form-outline mb-4">
+              <label class="form-label mx-2 is-invalid">Face</label>
+              <div class="invalid-feedback">
+                {{ teacher_form.face_img.errors }}
+              </div>
+              {{ teacher_form.face_img }}
             </div>
-            {{ teacher_form.face_img }}
-          </div>
-          <br>
+            <br>
 
-          <legend><span class="number">4</span>Fingerprint Samples</legend>  
-          <br>
+            <legend><span class="number">4</span>Upload Fingerprint Samples</legend>  
+            <br>
 
-          <div class="form-outline mb-4">
-            <label class="form-label mx-2">Right Thumb</label>
-            <div class="invalid-feedback">
-              {{ teacher_form.right_thumb_img.errors }}
+            <div class="form-outline mb-4">
+              <label class="form-label mx-2">Right Thumb</label>
+              <div class="invalid-feedback">
+                {{ teacher_form.right_thumb_img.errors }}
+              </div>
+              {{ teacher_form.right_thumb_img }}
             </div>
-            {{ teacher_form.right_thumb_img }}
-          </div>
-          <br>
+            <br>
 
-          <div class="form-outline mb-4">
-            <label class="form-label mx-2">Right Index Finger</label>
-            <div class="invalid-feedback">
-              {{ teacher_form.right_index_img.errors }}
+            <div class="form-outline mb-4">
+              <label class="form-label mx-2">Right Index Finger</label>
+              <div class="invalid-feedback">
+                {{ teacher_form.right_index_img.errors }}
+              </div>
+              {{ teacher_form.right_index_img }}
             </div>
-            {{ teacher_form.right_index_img }}
-          </div>
-          <br>
+            <br>
 
-          <div class="form-outline mb-4">
-            <label class="form-label mx-2">Right Middle Finger</label>
-            <div class="invalid-feedback">
-              {{ teacher_form.right_middle_img.errors }}
+            <div class="form-outline mb-4">
+              <label class="form-label mx-2">Right Middle Finger</label>
+              <div class="invalid-feedback">
+                {{ teacher_form.right_middle_img.errors }}
+              </div>
+              {{ teacher_form.right_middle_img }}
             </div>
-            {{ teacher_form.right_middle_img }}
-          </div>
-          <br>
+            <br>
 
-          <div class="form-outline mb-4">
-            <label class="form-label mx-2">Right Ring Finger</label>
-            <div class="invalid-feedback">
-              {{ teacher_form.right_ring_img.errors }}
+            <div class="form-outline mb-4">
+              <label class="form-label mx-2">Right Ring Finger</label>
+              <div class="invalid-feedback">
+                {{ teacher_form.right_ring_img.errors }}
+              </div>
+              {{ teacher_form.right_ring_img }}
             </div>
-            {{ teacher_form.right_ring_img }}
-          </div>
-          <br>
+            <br>
 
-          <div class="form-outline mb-4">
-            <label class="form-label mx-2">Right Little Finger</label>
-            <div class="invalid-feedback">
-              {{ teacher_form.right_little_img.errors }}
+            <div class="form-outline mb-4">
+              <label class="form-label mx-2">Right Little Finger</label>
+              <div class="invalid-feedback">
+                {{ teacher_form.right_little_img.errors }}
+              </div>
+              {{ teacher_form.right_little_img }}
             </div>
-            {{ teacher_form.right_little_img }}
+            <br><br>
           </div>
-          <br><br>
 
           <button type="submit">Register</button>
 
@@ -481,3 +442,62 @@
     }
   </style>
 {% endblock style %}
+
+{% block js %}
+  <script>
+    $(function() {
+      $('#id_teacher_status').change(function(){
+        let value = $('#id_teacher_status').val();
+        if (value == "P"){
+          $('#id_face_img').removeAttr('required');
+          $('#id_right_thumb_img').removeAttr('required');
+          $('#id_right_index_img').removeAttr('required');
+          $('#id_right_middle_img').removeAttr('required');
+          $('#id_right_ring_img').removeAttr('required');
+          $('#id_right_little_img').removeAttr('required');
+          $('#optional').hide();
+        }
+        else if (value == "V"){
+          $('#optional').show()
+          $("input").attr('required', true)
+        }
+    });
+    })
+    $(function() {
+      window.scrollTo(0, 0);
+      $('input').blur()
+      $('#side-menu').metisMenu();
+
+  });
+
+  // Loads the correct sidebar on window load, collapses the sidebar on window resize.
+  // Sets the min-height of #page-wrapper to window size
+  $(function() {
+      $(window).bind("load resize", function() {
+          topOffset = 50;
+          width = (this.window.innerWidth > 0) ? this.window.innerWidth : this.screen.width;
+          if (width < 768) {
+              $('div.navbar-collapse').addClass('collapse');
+              topOffset = 100; // 2-row-menu
+          } else {
+              $('div.navbar-collapse').removeClass('collapse');
+          }
+
+          height = ((this.window.innerHeight > 0) ? this.window.innerHeight : this.screen.height) - 1;
+          height = height - topOffset;
+          if (height < 1) height = 1;
+          if (height > topOffset) {
+              $("#page-wrapper").css("min-height", (height) + "px");
+          }
+      });
+
+      var url = window.location;
+      var element = $('ul.nav a').filter(function() {
+          return this.href == url || url.href.indexOf(this.href) == 0;
+      }).addClass('active').parent().parent().addClass('in').parent();
+      if (element.is('li')) {
+          element.addClass('active');
+      }
+  });
+  </script>
+{% endblock js %}
