@@ -4,53 +4,49 @@
 
 {% block body %}
     <div class="row">
-        <div class="col-12" style="margin-top: 10px">
-            <label for="t_name">Teacher Name</label>
-            <input type="text" id="t_name" name="t_name">                
-            <label for="date_to">Date To:</label>
-            <input type="date" id="date_to" name="date_to">
-            <label for="date_from">Date From</label>
-            <input type="date" id="date_from" name="date_from">
-            <button type="button" class="btn btn-primary">Search</i></button>
-        </div>
+        <form method="POST" action={% url 'teacher_report' %}>
+            {% csrf_token %}
+            <div class="col-12" style="margin-top: 10px">
+                <label for="t_name">Email</label>
+                <input type="Email" id="email" name="email" {% if email %}value="{{ email }}"{% endif %}>
+                <label for="date_from">Date From</label>
+                <input type="date" id="date_from" name="date_from" {% if date_from %}value="{{ date_from }}"{% endif %}>
+                <label for="date_to">Date To</label>
+                <input type="date" id="date_to" name="date_to" {% if date_to %}value="{{ date_to }}"{% endif %}>
+                <button type="submit" class="btn btn-primary" style="margin-left: 50px">Search</i></button>
+            </div>
+        </form>
         <br>
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                <th scope="col">Sr No</th>
-                <th scope="col">Teacher Name</th>
-                <th scope="col">Date</th>
-                <th scope="col">Check In</th>
-                <th scope="col">Check Out</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <th scope="row">1</th>                    
-                    <td>Jawad Sheikh</td>                    
-                    <td>7/26/2022</td>
-                    <td>Marked</td>
-                    <td>Marked</td>                    
-                </tr>
-                <tr>
-                    <th scope="row">2</th>                    
-                    <td>Rehan Sheikh</td>                    
-                    <td>7/26/2022</td>
-                    <td>Marked</td>
-                    <td>Marked</td>                    
-                </tr>
-                <tr>
-                    <th scope="row">3</th>                    
-                    <td>Nadeem Sheikh</td>                    
-                    <td>7/26/2022</td>
-                    <td>Marked</td>
-                    <td>Marked</td>                    
-                </tr>
-            </tbody>
-        </table>
-        <div class="csv-btn">
-            <button type="button" class="btn btn-primary">Download CSV</i></button> 
-        </div>
+        {% if search %}
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                    <th scope="col">Sr No</th>
+                    <th scope="col">Teacher Name</th>
+                    <th scope="col">Email</th>
+                    <th scope="col">Check In</th>
+                    <th scope="col">Check Out</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for obj in search %}
+                        <tr>
+                            <th scope="row">{{ forloop.counter }}</th>                    
+                            <td>{{ obj.teacher.teacher_name }}</td>
+                            <td>{{ obj.teacher.user.email }}</td>
+                            <td>{{ obj.checkin_time }}</td>
+                            <td>{{ obj.checkout_time }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div class="csv-btn">
+                <button type="button" class="btn btn-primary">Download CSV</i></button> 
+            </div>
+        {% else %}
+            <div class="col-md-4"></div>
+            <img src="/media/images/no_data.jpg" alt="No data" width="400" height="400">
+        {% endif %}
     </div>
 {% endblock body %}
 

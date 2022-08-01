@@ -1,8 +1,11 @@
+from dataclasses import fields
 import re
 from django import forms
-from .models import Attendance, BulkAttendance, Student, Teacher
+from .models import Attendance, BulkAttendance, DataCSV, SearchStudent, Student, Teacher
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.admin.widgets import AdminDateWidget
+from bootstrap_datepicker_plus.widgets import DatePickerInput
 
 
 class LoginForm(AuthenticationForm):
@@ -129,5 +132,29 @@ class BulkAttendanceForm(forms.ModelForm):
         fields = '__all__'
 
 
-class SearchTeacherForm(forms.Form):
-    pass
+class SearchStudentForm(forms.ModelForm):
+    class Meta:
+        model = SearchStudent
+        fields = '__all__'
+    
+    def __init__(self, *args, **kwargs):
+        super(SearchStudentForm, self).__init__(*args, **kwargs)
+        self.fields['reg_no'].required = False
+        self.fields['course'].required = False
+
+
+# class DataCSVForm(forms.ModelForm):
+#     class Meta:
+#         model = DataCSV
+#         fields = '__all__'
+
+# class SearchTeacherForm(forms.Form):
+#     email = forms.EmailField()
+#     # date = fields.DateField(
+#     #     input_formats=['%d/%m/%Y'],
+#     #     widget=widgets.DatePickerWidget(
+#     #         format='%d/%m/%Y'
+#     #     )
+#     # )
+#     start_date = forms.DateField(widget=DatePickerInput())
+#     end_date = forms.DateField(widget=DatePickerInput())

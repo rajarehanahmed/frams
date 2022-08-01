@@ -124,7 +124,7 @@ class StudentAttendance(models.Model):
     )
     id = models.AutoField
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
-    time = models.DateTimeField(auto_now_add=True)
+    time = models.DateTimeField(null=True)
     course = models.ForeignKey(Course, on_delete=models.CASCADE, null=True)
     status = models.CharField(max_length=1, choices=Attendance_Statuses, null=True)
 
@@ -140,3 +140,12 @@ class BulkAttendance(models.Model):
 
     def __str__(self):
         return str(self.time)
+
+
+class SearchStudent(models.Model):
+    id = models.AutoField
+    reg_no = models.CharField(max_length=20, null=True)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, null=True)
+
+class DataCSV(models.Model):
+    data = models.BinaryField()

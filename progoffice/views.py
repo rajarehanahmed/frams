@@ -1,12 +1,16 @@
 import base64
+from cgitb import reset
+import csv
+from http.server import HTTPServer
 # from mimetypes import encodings_map
 # from operator import index
 import pickle
 import time
+from django.forms import DateField
 # from this import d
 # from xml.dom.minidom import TypeInfo
 # from cv2 import waitKey
-from django.http import HttpResponse
+from django.http import Http404, HttpResponse
 from django.shortcuts import redirect, render
 from django.contrib.sites.shortcuts import get_current_site
 from django.template.loader import render_to_string
@@ -14,14 +18,15 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes
 from django.utils.encoding import force_str
 from django.core.mail import EmailMessage, send_mail
+from urllib3 import HTTPResponse
 # from pandas import date_range
 from frams.tokens import generate_token
 from frams import settings
 from django.contrib.auth.models import User
 from django.contrib import messages
 
-from .models import Attendance, ClassTiming, PendingRegistration, ClassRoom, Student, StudentAttendance, Teacher, Timetable
-from .forms import StudentForm, TeacherAttendanceForm, TeacherForm, UserForm, BulkAttendanceForm
+from .models import Attendance, ClassTiming, DataCSV, PendingRegistration, ClassRoom, Student, StudentAttendance, Teacher, Timetable
+from .forms import SearchStudentForm, StudentForm, TeacherAttendanceForm, TeacherForm, UserForm, BulkAttendanceForm
 
 import cv2
 import numpy as np
@@ -696,7 +701,114 @@ def teacherFingerprintAttendance(request):
 
 
 def teacherReport(request):
-    return render(request, 'progoffice/teacher_report.html')
+    if request.user.is_authenticated:
+        if request.user.is_superuser:
+            if request.method == 'POST':
+                email = request.POST['email']
+                date_from = request.POST['date_from']
+                date_to = request.POST['date_to']
+
+                res = None
+                today = datetime.today().strftime('%Y-%m-%d')
+                today_obj = datetime.strptime(today, '%Y-%m-%d')
+                if email and date_from and date_to:
+                    start_date = datetime.strptime(date_from, "%Y-%m-%d")
+                    end_date = datetime.strptime(date_to, "%Y-%m-%d")
+                    try:
+                        teacher=Teacher.objects.get(user=User.objects.get(email=email))
+                    except:
+                        pass
+                    if start_date > end_date or start_date > today_obj or end_date > today_obj:
+                        messages.error(request, 'Invalid Date! Please note that "Date to" must be greater than or equal to "Date From".')
+                        return redirect('teacher_report')
+                    
+                    elif start_date == end_date:
+                        res = Attendance.objects.filter(teacher=teacher).filter(Q(checkin_time__year=start_date.year) and Q(checkin_time__month=start_date.month) and Q(checkin_time__day=start_date.day))
+                    else:
+                        try:
+                            res = Attendance.objects.filter(teacher=teacher).filter(Q(checkin_time__range=[date_from, f'{date_to} 23:59:59']))
+                        except:
+                            res = None
+
+                elif not email and date_from and date_to:
+                    start_date = datetime.strptime(date_from, "%Y-%m-%d")
+                    end_date = datetime.strptime(date_to, "%Y-%m-%d")
+                    if start_date > end_date or start_date > today_obj or end_date > today_obj:
+                        messages.error(request, 'Invalid Date! Please note that "Date to" must be greater than or equal to "Date From".')
+                        return redirect('teacher_report')
+                    
+                    elif start_date == end_date:
+                        try:
+                            res = Attendance.objects.filter(Q(checkin_time__year=start_date.year) and Q(checkin_time__month=start_date.month) and Q(checkin_time__day=start_date.day))
+                        except:
+                            res = None
+                    else:
+                        try:
+                            res = Attendance.objects.filter(Q(checkin_time__range=[date_from, f'{date_to} 23:59:59']))
+                        except:
+                            res = None
+                
+                elif not email and not date_to and date_from:
+                    start_date = datetime.strptime(date_from, "%Y-%m-%d")
+                    if start_date > today_obj:
+                        messages.error(request, 'Invalid Date! Ensure date is not greater than today. Please note that "Date to" must be greater than or equal to "Date From".')
+                        return redirect('teacher_report')
+                    elif start_date == today_obj:
+                        try:
+                            res = Attendance.objects.filter(Q(checkin_time__year=start_date.year) and Q(checkin_time__month=start_date.month) and Q(checkin_time__day=start_date.day))
+                        except:
+                            res = None
+                    else:
+                        try:
+                            res = Attendance.objects.filter(Q(checkin_time__range=[date_from, f'{today} 23:59:59']))
+                        except:
+                            res = None
+
+                elif email and date_from and not date_to:
+                    start_date = datetime.strptime(date_from, "%Y-%m-%d")
+                    try:
+                        teacher=Teacher.objects.get(user=User.objects.get(email=email))
+                    except:
+                        pass
+                    if start_date > today_obj:
+                        messages.error(request, 'Invalid Date! Ensure date is not greater than today.  Please note that "Date to" must be greater than or equal to "Date From".')
+                        return redirect('teacher_report')
+                    
+                    elif start_date == today_obj:
+                        try:
+                            res = Attendance.objects.filter(teacher=teacher).filter(Q(checkin_time__year=start_date.year) and Q(checkin_time__month=start_date.month) and Q(checkin_time__day=start_date.day))
+                        except:
+                            res = None
+                    else:
+                        try:
+                            res = Attendance.objects.filter(teacher=teacher).filter(Q(checkin_time__range=[date_from, f'{today} 23:59:59']))
+                        except:
+                            res = None
+
+                elif email and not date_from and not date_to:
+                    try:
+                        teacher=Teacher.objects.get(user=User.objects.get(email=email))
+                        res = Attendance.objects.filter(teacher=teacher)
+                    except:
+                        res = None
+                
+                elif not date_from and date_to:
+                    messages.error(request, 'Invalid Date! Ensure date is not greater than today.  Please note that "Date to" must be greater than or equal to "Date From".')
+
+                context = {
+                    'search': res,
+                    'email': email,
+                    'date_from': date_from,
+                    'date_to': date_to,
+                }
+                return render(request, 'progoffice/teacher_report.html', context)
+            
+
+            return render(request, 'progoffice/teacher_report.html')
+        else:
+            return HttpResponse('404 - Page Not Found')
+    else:
+        return redirect('index')
 
 
 def addStudent(request):
@@ -893,4 +1005,316 @@ def studentAttendance(request):
 
 
 def studentReport(request):
-    return render(request, 'progoffice/student_attendance.html')
+    if request.user.is_authenticated:
+        if request.user.is_superuser:
+            if request.method == 'POST':
+                form = SearchStudentForm(request.POST)
+                date_from = request.POST['date_from']
+                date_to = request.POST['date_to']
+                if form.is_valid():
+                    search_instance = form.save()
+                    reg_no = search_instance.reg_no
+                    course = search_instance.course
+                    print(type(course))
+                    print('REG_NO: ', reg_no)
+                    print('COURSE', course)
+                    print('DATE FROM: ', date_from)
+                    print('DATE TO: ', date_to)
+
+
+
+
+                    res = None
+                    today = datetime.today().strftime('%Y-%m-%d')
+                    today_obj = datetime.strptime(today, '%Y-%m-%d')
+                    if reg_no and course and date_from and date_to:
+                        start_date = datetime.strptime(date_from, "%Y-%m-%d")
+                        end_date = datetime.strptime(date_to, "%Y-%m-%d")
+                        try:
+                            student = Student.objects.get(reg_no=reg_no)
+                        except:
+                            pass
+                        if start_date > end_date or start_date > today_obj or end_date > today_obj:
+                            messages.error(request, 'Invalid Date! Please note that "Date to" must be greater than or equal to "Date From".')
+                            context = {
+                                'search': res,
+                                'form': form,
+                                'date_from': date_from,
+                                'date_to': date_to,
+                            }
+                            return render(request, 'progoffice/student_report.html', context)
+                        
+                        elif start_date == end_date:
+                            res = StudentAttendance.objects.filter(student=student, course=course).filter(Q(time__year=start_date.year) and Q(time__month=start_date.month) and Q(time__day=start_date.day))
+                        else:
+                            try:
+                                res = StudentAttendance.objects.filter(student=student, course=course).filter(Q(time__range=[date_from, f'{date_to} 23:59:59']))
+                            except:
+                                res = None
+                    
+                    elif reg_no and not course and date_from and date_to:
+                        start_date = datetime.strptime(date_from, "%Y-%m-%d")
+                        end_date = datetime.strptime(date_to, "%Y-%m-%d")
+                        try:
+                            student = Student.objects.get(reg_no=reg_no)
+                        except:
+                            pass
+                        if start_date > end_date or start_date > today_obj or end_date > today_obj:
+                            messages.error(request, 'Invalid Date! Please note that "Date to" must be greater than or equal to "Date From".')
+                            context = {
+                                'search': res,
+                                'form': form,
+                                'date_from': date_from,
+                                'date_to': date_to,
+                            }
+                            return render(request, 'progoffice/student_report.html', context)
+                        
+                        elif start_date == end_date:
+                            res = StudentAttendance.objects.filter(student=student).filter(Q(time__year=start_date.year) and Q(time__month=start_date.month) and Q(time__day=start_date.day))
+                        else:
+                            try:
+                                res = StudentAttendance.objects.filter(student=student).filter(Q(time__range=[date_from, f'{date_to} 23:59:59']))
+                            except:
+                                res = None
+
+                    elif not reg_no and not course and date_from and date_to:
+                        start_date = datetime.strptime(date_from, "%Y-%m-%d")
+                        end_date = datetime.strptime(date_to, "%Y-%m-%d")
+                        if start_date > end_date or start_date > today_obj or end_date > today_obj:
+                            messages.error(request, 'Invalid Date! Please note that "Date to" must be greater than or equal to "Date From".')
+                            context = {
+                                'search': res,
+                                'form': form,
+                                'date_from': date_from,
+                                'date_to': date_to,
+                            }
+                            return render(request, 'progoffice/student_report.html', context)
+                        
+                        elif start_date == end_date:
+                            try:
+                                res = StudentAttendance.objects.filter(Q(time__year=start_date.year) and Q(time__month=start_date.month) and Q(time__day=start_date.day))
+                            except:
+                                res = None
+                        else:
+                            try:
+                                res = StudentAttendance.objects.filter(Q(time__range=[date_from, f'{date_to} 23:59:59']))
+                            except:
+                                res = None
+                    
+                    elif not reg_no and not course and not date_to and date_from:
+                        start_date = datetime.strptime(date_from, "%Y-%m-%d")
+                        if start_date > today_obj:
+                            messages.error(request, 'Invalid Date! Ensure date is not greater than today. Please note that "Date to" must be greater than or equal to "Date From".')
+                            context = {
+                                'search': res,
+                                'form': form,
+                                'date_from': date_from,
+                                'date_to': date_to,
+                            }
+                            return render(request, 'progoffice/student_report.html', context)
+                        elif start_date == today_obj:
+                            try:
+                                res = StudentAttendance.objects.filter(Q(time__year=start_date.year) and Q(time__month=start_date.month) and Q(time__day=start_date.day))
+                            except:
+                                res = None
+                        else:
+                            try:
+                                res = StudentAttendance.objects.filter(Q(time__range=[date_from, f'{today} 23:59:59']))
+                            except:
+                                res = None
+
+                    elif reg_no and not course and date_from and not date_to:
+                        start_date = datetime.strptime(date_from, "%Y-%m-%d")
+                        try:
+                            student=Student.objects.get(reg_no=reg_no)
+                        except:
+                            pass
+                        if start_date > today_obj:
+                            messages.error(request, 'Invalid Date! Ensure date is not greater than today.  Please note that "Date to" must be greater than or equal to "Date From".')
+                            context = {
+                                'search': res,
+                                'form': form,
+                                'date_from': date_from,
+                                'date_to': date_to,
+                            }
+                            return render(request, 'progoffice/student_report.html', context)
+                        
+                        elif start_date == today_obj:
+                            try:
+                                res = StudentAttendance.objects.filter(student=student).filter(Q(time__year=start_date.year) and Q(time__month=start_date.month) and Q(time__day=start_date.day))
+                            except:
+                                res = None
+                        else:
+                            try:
+                                res = StudentAttendance.objects.filter(student=student).filter(Q(time__range=[date_from, f'{today} 23:59:59']))
+                            except:
+                                res = None
+
+                    elif reg_no and not course and not date_from and not date_to:
+                        try:
+                            student=Student.objects.get(reg_no=reg_no)
+                            res = StudentAttendance.objects.filter(student=student)
+                        except:
+                            res = None
+                    
+                    elif not reg_no and course and not date_from and not date_to:
+                        try:
+                            res = StudentAttendance.objects.filter(course=course)
+                        except:
+                            res = None
+                    
+                    elif not reg_no and course and date_from and not date_to:
+                        start_date = datetime.strptime(date_from, "%Y-%m-%d")
+                        if start_date > today_obj:
+                            messages.error(request, 'Invalid Date! Ensure date is not greater than today.  Please note that "Date to" must be greater than or equal to "Date From".')
+                            context = {
+                                'search': res,
+                                'form': form,
+                                'date_from': date_from,
+                                'date_to': date_to,
+                            }
+                            return render(request, 'progoffice/student_report.html', context)
+                        
+                        elif start_date == today_obj:
+                            try:
+                                res = StudentAttendance.objects.filter(course=course).filter(Q(time__year=start_date.year) and Q(time__month=start_date.month) and Q(time__day=start_date.day))
+                            except:
+                                res = None
+                        else:
+                            try:
+                                res = StudentAttendance.objects.filter(course=course).filter(Q(time__range=[date_from, f'{today} 23:59:59']))
+                            except:
+                                res = None
+                    
+                    elif not reg_no and course and date_from and date_to:
+                        start_date = datetime.strptime(date_from, "%Y-%m-%d")
+                        end_date = datetime.strptime(date_to, "%Y-%m-%d")
+                        if start_date > end_date or start_date > today_obj or end_date > today_obj:
+                            messages.error(request, 'Invalid Date! Please note that "Date to" must be greater than or equal to "Date From".')
+                            context = {
+                                'search': res,
+                                'form': form,
+                                'date_from': date_from,
+                                'date_to': date_to,
+                            }
+                            return render(request, 'progoffice/student_report.html', context)
+                        
+                        elif start_date == end_date:
+                            res = StudentAttendance.objects.filter(course=course).filter(Q(time__year=start_date.year) and Q(time__month=start_date.month) and Q(time__day=start_date.day))
+                        else:
+                            try:
+                                res = StudentAttendance.objects.filter(course=course).filter(Q(time__range=[date_from, f'{date_to} 23:59:59']))
+                            except:
+                                res = None
+                    
+                    elif reg_no and course and date_from and not date_to:
+                        start_date = datetime.strptime(date_from, "%Y-%m-%d")
+                        try:
+                            student = Student.objects.get(reg_no=reg_no)
+                        except:
+                            pass
+                        if start_date > today_obj:
+                            messages.error(request, 'Invalid Date! Ensure date is not greater than today.  Please note that "Date to" must be greater than or equal to "Date From".')
+                            context = {
+                                'search': res,
+                                'form': form,
+                                'date_from': date_from,
+                                'date_to': date_to,
+                            }
+                            return render(request, 'progoffice/student_report.html', context)
+                        
+                        elif start_date == today_obj:
+                            try:
+                                res = StudentAttendance.objects.filter(student=student, course=course).filter(Q(time__year=start_date.year) and Q(time__month=start_date.month) and Q(time__day=start_date.day))
+                            except:
+                                res = None
+                        else:
+                            try:
+                                res = StudentAttendance.objects.filter(student=student, course=course).filter(Q(time__range=[date_from, f'{today} 23:59:59']))
+                            except:
+                                res = None
+                    
+                    elif reg_no and course and not date_from and not date_to:
+                        try:
+                            student=Student.objects.get(reg_no=reg_no)
+                            res = StudentAttendance.objects.filter(student=student, course=course)
+                        except:
+                            res = None
+                    
+                    elif not reg_no and course and not date_from and not date_to:
+                        try:
+                            res = StudentAttendance.objects.filter(course=course)
+                        except:
+                            res = None
+                    
+                    elif not date_from and date_to:
+                        messages.error(request, 'Invalid Date! Ensure date is not greater than today.  Please note that "Date to" must be greater than or equal to "Date From".')
+                    
+                    if res:
+                        data_csv = DataCSV()
+                        np_bytes = pickle.dumps(res)
+                        np_base64 = base64.b64encode(np_bytes)
+                        data_csv.data = np_base64
+                        data_csv.save()
+                        print('PRIMARY KEY: ***************************', data_csv.pk)
+                        print('TYPE: ', type(data_csv.pk))
+                        context = {
+                            'search': res,
+                            'form': form,
+                            'date_from': date_from,
+                            'date_to': date_to,
+                            'data_obj_pk': data_csv.pk,
+                        }
+                    else:
+                        context = {
+                            'search': res,
+                            'form': form,
+                            'date_from': date_from,
+                            'date_to': date_to,
+                        }
+                    return render(request, 'progoffice/student_report.html', context)
+
+
+                return HttpResponse('Hi there')
+            else:
+                return render(request, 'progoffice/student_report.html', {'form': SearchStudentForm()})
+        else:
+            return HttpResponse('404 - Page Not Found')
+    else:
+        return redirect('index')
+
+
+def generateCSV(request):
+    if request.user.is_authenticated:
+        if request.user.is_superuser:
+            pk = request.GET['pk']
+            print(pk)
+            try:
+                data_obj = DataCSV.objects.get(pk=pk)
+                np_bytes = base64.b64decode(data_obj.data)
+                query_set = pickle.loads(np_bytes)
+            except:
+                messages.warning(request, 'No dat found!')
+                return redirect('student_report')
+            response = HttpResponse(content_type='text/csv')
+            response['Content-Disposition'] = 'attachment; filename=student_report.csv'
+
+            # Create a CSV writer
+            writer = csv.writer(response)
+
+            writer.writerow(['Sr No', 'Reg No', 'Name', 'Course', 'Date', 'Attendance'])
+
+            for count, obj in enumerate(query_set):
+                writer.writerow([count+1, obj.student.reg_no, obj.student.student_name, obj.course, obj.time, obj.status ])
+
+            print(query_set)
+
+            return response
+        else:
+            return Http404('Page Not Found')
+    else:
+        return redirect('index')
+            
+            
+
+            

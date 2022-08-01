@@ -14,5 +14,6 @@ urlpatterns = [
     path('teacher-report/', views.teacherReport, name='teacher_report'),
     path('addstudent/', views.addStudent, name='add_student'),
     path('student-attendance/', views.studentAttendance, name='student_attendance'),
-    path('student-report', views.studentReport, name="student_report")
+    path('student-report/', views.studentReport, name='student_report'),
+    path('generate-csv/', views.generateCSV, name='generate_csv'),
 ]
