@@ -18,7 +18,6 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes
 from django.utils.encoding import force_str
 from django.core.mail import EmailMessage, send_mail
-from urllib3 import HTTPResponse
 # from pandas import date_range
 from frams.tokens import generate_token
 from frams import settings
@@ -795,12 +794,28 @@ def teacherReport(request):
                 elif not date_from and date_to:
                     messages.error(request, 'Invalid Date! Ensure date is not greater than today.  Please note that "Date to" must be greater than or equal to "Date From".')
 
-                context = {
-                    'search': res,
-                    'email': email,
-                    'date_from': date_from,
-                    'date_to': date_to,
-                }
+                if res:
+                    data_csv = DataCSV()
+                    np_bytes = pickle.dumps(res)
+                    np_base64 = base64.b64encode(np_bytes)
+                    data_csv.data = np_base64
+                    data_csv.save()
+                    print('PRIMARY KEY: ***************************', data_csv.pk)
+                    print('TYPE: ', type(data_csv.pk))
+                    context = {
+                        'search': res,
+                        'email': email,
+                        'date_from': date_from,
+                        'date_to': date_to,
+                        'data_obj_pk': data_csv.pk,
+                    }
+                else:
+                    context = {
+                        'search': res,
+                        'email': email,
+                        'date_from': date_from,
+                        'date_to': date_to,
+                    }
                 return render(request, 'progoffice/teacher_report.html', context)
             
 
@@ -1284,7 +1299,39 @@ def studentReport(request):
         return redirect('index')
 
 
-def generateCSV(request):
+def generateTeacherCSV(request):
+    if request.user.is_authenticated:
+        if request.user.is_superuser:
+            pk = request.GET['pk']
+            print(pk)
+            try:
+                data_obj = DataCSV.objects.get(pk=pk)
+                np_bytes = base64.b64decode(data_obj.data)
+                query_set = pickle.loads(np_bytes)
+            except:
+                messages.warning(request, 'No dat found!')
+                return redirect('teacher_report')
+            response = HttpResponse(content_type='text/csv')
+            response['Content-Disposition'] = 'attachment; filename=teacher_report.csv'
+
+            # Create a CSV writer
+            writer = csv.writer(response)
+
+            writer.writerow(['Sr No', 'Teacher Name', 'Email', 'Check In', 'Check Out'])
+
+            for count, obj in enumerate(query_set):
+                writer.writerow([count+1, obj.teacher.teacher_name, obj.teacher.user.email, obj.checkin_time, obj.checkout_time])
+
+            print(query_set)
+
+            return response
+        else:
+            return Http404('Page Not Found')
+    else:
+        return redirect('index')
+
+
+def generateStudentCSV(request):
     if request.user.is_authenticated:
         if request.user.is_superuser:
             pk = request.GET['pk']
@@ -1314,7 +1361,3 @@ def generateCSV(request):
             return Http404('Page Not Found')
     else:
         return redirect('index')
-            
-            
-
-            

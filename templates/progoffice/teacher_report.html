@@ -4,7 +4,7 @@
 
 {% block body %}
     <div class="row">
-        <form method="POST" action={% url 'teacher_report' %}>
+        <form method="POST" action={% url 'teacher_report_admin' %}>
             {% csrf_token %}
             <div class="col-12" style="margin-top: 10px">
                 <label for="t_name">Email</label>
@@ -41,7 +41,7 @@
                 </tbody>
             </table>
             <div class="csv-btn">
-                <button type="button" class="btn btn-primary">Download CSV</i></button> 
+                <a href="{% url 'generate_teacher_csv' %}?pk={{ data_obj_pk }}"><button type="button" class="btn btn-primary">Download CSV</i></button></a> 
             </div>
         {% else %}
             <div class="col-md-4"></div>

@@ -147,5 +147,10 @@ class SearchStudent(models.Model):
     reg_no = models.CharField(max_length=20, null=True)
     course = models.ForeignKey(Course, on_delete=models.CASCADE, null=True)
 
+
+# class SearchTeacher(models.Model):
+#     id = models.AutoField
+#     teacher = models.
+
 class DataCSV(models.Model):
     data = models.BinaryField()

@@ -1,11 +1,10 @@
 from dataclasses import fields
 import re
 from django import forms
-from .models import Attendance, BulkAttendance, DataCSV, SearchStudent, Student, Teacher
+from .models import Attendance, BulkAttendance, SearchStudent, Student, Teacher
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from django.contrib.admin.widgets import AdminDateWidget
-from bootstrap_datepicker_plus.widgets import DatePickerInput
+
 
 
 class LoginForm(AuthenticationForm):
@@ -142,11 +141,6 @@ class SearchStudentForm(forms.ModelForm):
         self.fields['reg_no'].required = False
         self.fields['course'].required = False
 
-
-# class DataCSVForm(forms.ModelForm):
-#     class Meta:
-#         model = DataCSV
-#         fields = '__all__'
 
 # class SearchTeacherForm(forms.Form):
 #     email = forms.EmailField()
