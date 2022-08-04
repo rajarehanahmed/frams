@@ -1,15 +1,7 @@
 import base64
 from cgitb import reset
 import csv
-from http.server import HTTPServer
-# from mimetypes import encodings_map
-# from operator import index
 import pickle
-import time
-from django.forms import DateField
-# from this import d
-# from xml.dom.minidom import TypeInfo
-# from cv2 import waitKey
 from django.http import Http404, HttpResponse
 from django.shortcuts import redirect, render
 from django.contrib.sites.shortcuts import get_current_site
@@ -37,9 +29,27 @@ from django.db.models import Count, Q
 def home(request):
     if request.user.is_authenticated:
         if request.user.is_superuser:
-            return render(request, 'progoffice/index.html')
+            now = datetime.now()
+            pendingRegs = PendingRegistration.objects.all()
+            studentsCount = Student.objects.all().count()
+            teachersCount = Teacher.objects.all().count()
+            checkinCount = Attendance.objects.filter(checkin_time__year=now.year, checkin_time__month=now.month, checkin_time__day=now.day).count()
+            checkoutCount = Attendance.objects.filter(checkout_time__year=now.year, checkout_time__month=now.month, checkout_time__day=now.day).count()
+            classesCount = Timetable.objects.filter(day=now.weekday()).count()
+            print('Total Teachers: ', teachersCount)
+            print('Total Students: ', studentsCount)
+            print('Class Today: ', classesCount)
+            context = {
+                'pendingRegs': pendingRegs,
+                'students_count': studentsCount,
+                'teachers_count': teachersCount,
+                'classes_count': classesCount,
+                'checkin_count': checkinCount,
+                'checkout_count': checkoutCount,
+            }
+            return render(request, 'progoffice/index.html', context)
         else:
-            return HttpResponse('404 - Page Not Found')
+            raise Http404()
     else:
         return redirect('/signin')
 
@@ -211,7 +221,7 @@ def addTeacher(request):
                 return render(request, 'progoffice/add_teacher.html', context)
 
         else:
-            return HttpResponse('404 - Page Not Found')
+            raise Http404()
 
     else:
         return redirect('index')
@@ -235,7 +245,7 @@ def pendingRegistrations(request):
             pendingRegs = PendingRegistration.objects.all()
             return render(request, 'authentication/pending_registration.html', {'pendingRegs': pendingRegs})
         else:
-            return HttpResponse('404 - Page Not Found')
+            raise Http404()
     else:
         return redirect('index')
 
@@ -254,7 +264,7 @@ def deletePendingReg(request):
                 messages.success(request, 'Registration Deleted Successfully')
                 return redirect('pending_registrations')
         else:
-            return HttpResponse('404 - Page Not Found')
+            raise Http404()
     else:
         return redirect('index')
 
@@ -403,7 +413,7 @@ def completeSignup(request):
                         return render(request, 'authentication/complete_signup.html', {'form': form})
 
         else:
-            return HttpResponse('404 - Page Not Found')
+            raise Http404()
 
     else:
         return redirect('index')
@@ -415,7 +425,7 @@ def teacherAttendance(request):
             
             return render(request, 'progoffice/teacher_attendance.html')
         else:
-            return HttpResponse('404 - Page Not Found')
+            raise Http404()
     else:
         return redirect('index')
 
@@ -521,7 +531,7 @@ def teacherFaceAttendance(request):
                     return render(request, 'progoffice/teacher_face_attendance.html', {'form': TeacherAttendanceForm()})
             return render(request, 'progoffice/teacher_face_attendance.html', {'form': TeacherAttendanceForm()})
         else:
-            return HttpResponse('404 - Page Not Found')
+            raise Http404()
     else:
         return redirect('index')
 
@@ -694,7 +704,7 @@ def teacherFingerprintAttendance(request):
             else:
                 return render(request, 'progoffice/teacher_fingerprint_attendance.html', {'form': TeacherAttendanceForm()})
         else:
-            return HttpResponse('404 - Page Not Found')
+            raise Http404()
     else:
         return redirect('index')
 
@@ -821,7 +831,7 @@ def teacherReport(request):
 
             return render(request, 'progoffice/teacher_report.html')
         else:
-            return HttpResponse('404 - Page Not Found')
+            raise Http404()
     else:
         return redirect('index')
 
@@ -875,7 +885,7 @@ def addStudent(request):
                 return render(request, 'progoffice/add_student.html', {'form': StudentForm()})
         
         else:
-            return HttpResponse('404 - Page Not Found')
+            raise Http404()
     
     else:
         return redirect('index')
@@ -1014,7 +1024,7 @@ def studentAttendance(request):
             else:
                 return render(request, 'progoffice/student_attendance.html', {'form': BulkAttendanceForm()})
         else:
-            return HttpResponse('404 - Page Not Found')
+            raise Http404()
     else:
         return redirect('index')
 
@@ -1294,7 +1304,7 @@ def studentReport(request):
             else:
                 return render(request, 'progoffice/student_report.html', {'form': SearchStudentForm()})
         else:
-            return HttpResponse('404 - Page Not Found')
+            raise Http404()
     else:
         return redirect('index')
 
@@ -1326,7 +1336,7 @@ def generateTeacherCSV(request):
 
             return response
         else:
-            return Http404('Page Not Found')
+            raise Http404()
     else:
         return redirect('index')
 
@@ -1358,6 +1368,6 @@ def generateStudentCSV(request):
 
             return response
         else:
-            return Http404('Page Not Found')
+            raise Http404()
     else:
         return redirect('index')

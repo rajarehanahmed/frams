@@ -17,14 +17,14 @@
       <div class="panel panel-primary">
         <div class="panel-heading">
           <div class="row">
-            <div class="col-xs-3"><i class="fa fa-check fa-5x"></i></div>
+            <div class="col-xs-3"><i class="fa fa-calendar fa-5x"></i></div>
             <div class="col-xs-9 text-right">
-              <div class="huge">88</div>
-              <div>Present Student</div>
+              <div class="huge">{{ classes_count }}</div>
+              <div>Classes today</div>
             </div>
           </div>
         </div><a href="#">
-          <div class="panel-footer"><span class="pull-left">View Details</span><span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+          <div class="panel-footer"><span class="pull-left"></span><span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
             <div class="clearfix"></div>
           </div></a>
       </div>
@@ -33,14 +33,14 @@
       <div class="panel panel-green">
         <div class="panel-heading">
           <div class="row">
-            <div class="col-xs-3"><i class="fa fa-check fa-5x"></i></div>
+            <div class="col-xs-3"><i class="fa fa-home fa-5x"></i></div>
             <div class="col-xs-9 text-right">
-              <div class="huge">8</div>
-              <div>Present Teacher</div>
+              <div class="huge">2</div>
+              <div>Total Rooms</div>
             </div>
           </div>
         </div><a href="#">
-          <div class="panel-footer"><span class="pull-left">View Details</span><span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+          <div class="panel-footer"><span class="pull-left"></span><span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
             <div class="clearfix"></div>
           </div></a>
       </div>
@@ -51,12 +51,12 @@
           <div class="row">
             <div class="col-xs-3"><i class="fa fa-user-plus fa-5x"></i></div>
             <div class="col-xs-9 text-right">
-              <div class="huge">25</div>
-              <div>Pending Registrations</div>
+              <div class="huge">{{ checkin_count }}</div>
+              <div>Teachers checked-in today</div>
             </div>
           </div>
         </div><a href="#">
-          <div class="panel-footer"><span class="pull-left">View Details</span><span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+          <div class="panel-footer"><span class="pull-left"></span><span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
             <div class="clearfix"></div>
           </div></a>
       </div>
@@ -65,10 +65,10 @@
       <div class="panel panel-red">
         <div class="panel-heading">
           <div class="row">
-            <div class="col-xs-3"><i class="fa fa-times fa-5x"></i></div>
+            <div class="col-xs-3"><i class="fa fa-user-plus fa-5x"></i></div>
             <div class="col-xs-9 text-right">
-              <div class="huge">13</div>
-              <div>Absent Students</div>
+              <div class="huge">{{ checkout_count }}</div>
+              <div>Teachers checked-out today</div>
             </div>
           </div>
         </div><a href="#">
@@ -91,9 +91,21 @@
     <!-- /Notification Panel-->
     <div class="col-lg-4">
       <div class="panel panel-default">
-        <div class="panel-heading"><i class="fa fa-bell fa-fw"></i> Notifications Panel</div>
+        <div class="panel-heading"><i class="fa fa-bell fa-fw"></i> Pending Registrations </div>
         <div class="panel-body">
-          <div class="list-group"><a class="list-group-item" href="#"><i class="fa fa-comment fa-fw"></i> New Comment<span class="pull-right text-muted small"><em>4 minutes ago</em></span></a><a class="list-group-item" href="#"><i class="fa fa-envelope fa-fw"></i> Message Sent<span class="pull-right text-muted small"><em>27 minutes ago</em></span></a><a class="list-group-item" href="#"><i class="fa fa-tasks fa-fw"></i> New Task<span class="pull-right text-muted small"><em>43 minutes ago</em></span></a><a class="list-group-item" href="#"><i class="fa fa-upload fa-fw"></i> Server Rebooted<span class="pull-right text-muted small"><em>11:32 AM</em></span></a><a class="list-group-item" href="#"><i class="fa fa-bolt fa-fw"></i> Server Crashed!<span class="pull-right text-muted small"><em>11:13 AM</em></span></a><a class="list-group-item" href="#"><i class="fa fa-warning fa-fw"></i> Server Not Responding<span class="pull-right text-muted small"><em>10:57 AM</em></span></a><a class="list-group-item" href="#"><i class="fa fa-shopping-cart fa-fw"></i> New Order Placed<span class="pull-right text-muted small"><em>9:49 AM</em></span></a></div><a class="btn btn-default btn-block" href="#">View All Alerts</a>
+          <div class="list-group">
+            {% for reg in pendingRegs|slice:":5" %}
+              <a id="src_btn{{ forloop.counter }}" class="list-group-item src_btn">
+                {{ forloop.counter }}.  {{ reg.teacher.user.email }}
+              </a>
+              <form method="post" action={% url 'pending_registrations' %}>
+                {% csrf_token %}
+                <input id="target_btn{{ forloop.counter }}" type="submit" style="display: none">
+                <input type="hidden" name="email" value="{{ reg.teacher.user.email }}">
+              </form>
+            {% endfor %}
+          </div>
+          <a class="btn btn-default btn-block" href={% url 'pending_registrations' %}>View All</a>
         </div>
       </div>
       <!-- /Donut Chart-->
@@ -110,16 +122,17 @@
 
 {% block js %}
   <script>
+    var teachers = {{ teachers_count }};
+    var students = {{ students_count }};
     $(function() {
-
         Morris.Donut({
             element: 'morris-donut-chart',
             data: [{
                 label: "Total Students",
-                value: 90
+                value: students
             }, {
                 label: "Total Teacher",
-                value: 10
+                value: teachers
             }, ],
             resize: true
         });
@@ -128,8 +141,8 @@
             element: 'morris-bar-chart',
             data: [{
                 y: '06 2022',
-                a: 6,
-                b: 1
+                a: 5,
+                b: 10
             }, {
                 y: '07 2022',
                 a: 10,
@@ -199,5 +212,29 @@
             element.addClass('active');
         }
     });
+    function click1() {
+      $("#target_btn1").click();
+    }
+    function click2() {
+      $("#target_btn2").click();
+    }
+    function click3() {
+      $("#target_btn3").click();
+    }
+    function click4() {
+      $("#target_btn4").click();
+    }
+    function click5() {
+      $("#target_btn5").click();
+    }
+    document.querySelector(".src_btn").onmouseover = function() {
+      $(".src_btn").css('cursor', 'pointer'); 
+    }
+    document.querySelector("#src_btn1").addEventListener("click", click1);
+    document.querySelector("#src_btn2").addEventListener("click", click2);
+    document.querySelector("#src_btn3").addEventListener("click", click3);
+    document.querySelector("#src_btn4").addEventListener("click", click4);
+    document.querySelector("#src_btn5").addEventListener("click", click5);
+    {% comment %} document.querySelector(".src_btn").addEventListener("mouseover", makePointer); {% endcomment %}
   </script>
 {% endblock js %}

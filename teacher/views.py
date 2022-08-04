@@ -14,7 +14,12 @@ from django.db.models import Count, Q
 
 def home(request):
     if request.user.is_authenticated and not request.user.is_superuser:
-        return render(request, 'teacher/index.html')
+        try:
+            teacher = Teacher.objects.get(user=request.user)
+            courses = Course.objects.filter(teacher=teacher)
+        except:
+            teacher = None
+        return render(request, 'teacher/index.html', {'teacher': teacher, 'courses': courses})
     elif request.user.is_authenticated and request.user.is_superuser:
         return redirect('index')
     else:

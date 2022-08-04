@@ -1,11 +1,7 @@
-import datetime
-from tkinter.tix import Tree
 from django.db import models
 from django.contrib.auth.models import User
 from datetime import datetime
 from .import myFields
-from django.contrib.contenttypes.models import ContentType
-from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 
 
 class Teacher(models.Model):
