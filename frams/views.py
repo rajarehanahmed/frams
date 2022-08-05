@@ -1,5 +1,5 @@
 from django.shortcuts import redirect, render
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import login, logout
 from django.contrib.auth.models import User
 from . tokens import generate_token
 from django.contrib import messages
@@ -9,13 +9,11 @@ from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes
 from django.utils.encoding import force_str
-from django.core.mail import EmailMessage, send_mail
+from django.core.mail import EmailMessage
 from frams import settings
 
 from progoffice.models import Teacher, PendingRegistration
 from progoffice.forms import LoginForm, UserForm, PartialTeacherForm
-
-# Create your views here.
 
 
 def index(request):
@@ -47,20 +45,25 @@ def signup(request):
 
         if user_form.is_valid():
             user = user_form.save()
+            user.is_active = False
+            user.save()
 
             teacher  = Teacher(user=user)
             teacher_form = PartialTeacherForm(request.POST, instance=teacher)
 
             if teacher_form.is_valid():
                 teacher_form.save()
+                
 
                 if teacher.teacher_status == 'V':
+
+                    # Make user inactive, will be active by completing registration and verifying email
                     pr = PendingRegistration(teacher=teacher)
                     pr.save()
 
-                    messages.success(request, 'Account Created, Please go to Admin for completing the Registration Process. Thank you!')
+                    messages.success(request, 'Account created, Please go to Admin for completing the registration process.')
                 else:
-                    # Sending Confirmation Email
+                    # Send Confirmation Email
                     try:
                         current_site = get_current_site(request)
                         email_subject = "Confirm your email @ FRAMS - Login!!"
@@ -84,7 +87,6 @@ def signup(request):
                 return render(request, 'authentication/signup.html', {'user_form': user_form, 'teacher_form': teacher_form})
 
         else:
-            print('user_form invalid')
             return render(request, 'authentication/signup.html', {'user_form': user_form, 'teacher_form': PartialTeacherForm(request.POST)})
 
     else:

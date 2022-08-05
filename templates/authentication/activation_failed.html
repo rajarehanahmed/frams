@@ -17,10 +17,9 @@
     </div>
   </div>
 </nav>
-<br><br><br>
 
 {% for message in messages %}
-  <div class="alert alert-{{message.tags}} alert-dismissible" role="alert">
+  <div class="alert alert-{{message.tags}} alert-dismissible" role="alert" style="margin-top: 50px">
     <span class="glyphicon glyphicon-ok-sign" aria-hidden="true"></span>
     <strong>{{message}}</strong>
   </div>

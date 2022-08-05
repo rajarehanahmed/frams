@@ -51,7 +51,6 @@ class TeacherForm(forms.ModelForm):
             self.add_error('teacher_name', 'Name contains digit(s)!')
         if not (regex.search(nameWithNoDigit) == None):
             self.add_error('teacher_name', 'Name contains special character(s)!')
-
         return cd
     
     def __init__(self, *args, **kwargs):

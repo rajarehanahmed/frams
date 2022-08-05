@@ -10,7 +10,7 @@
   </div>
 
   
-  {% if pendingRegs %}
+  {% if pending_regs %}
     <div class="row">
       <div class="col-12">
         <table class="table table-bordered">
@@ -24,7 +24,7 @@
             </tr>
           </thead>
           <tbody>
-            {% for reg in pendingRegs %}
+            {% for reg in pending_regs %}
               <tr>
                 <th scope="row">{{ forloop.counter }}</th>
                 <td>{{ reg.teacher.teacher_name }}</td>
