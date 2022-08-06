@@ -183,7 +183,7 @@ def addTeacher(request):
                             current_site = get_current_site(request)
                             email_subject = "Confirm your email @ FRAMS - Login!!"
                             message = render_to_string("authentication/email_confirmation.html", {
-                                'email': user.email,
+                                'name': teacher.teacher_name,
                                 'domain': current_site.domain,
                                 'uid': force_str(urlsafe_base64_encode(force_bytes(user.pk))),
                                 'token': generate_token.make_token(user)
@@ -299,6 +299,7 @@ def completeSignup(request):
                         form.save()
 
                         if teacher.teacher_status == 'V':
+                            print("VVVVVVVVVVVVVVVVVV")
                             # Detecting face in the image and storing encodings in the database
                             path = 'media/teachers/faces'
                             fileName = form.cleaned_data['face_img']
@@ -315,6 +316,12 @@ def completeSignup(request):
                                 os.remove(teacher.right_middle_img.path)
                                 os.remove(teacher.right_ring_img.path)
                                 os.remove(teacher.right_little_img.path)
+                                teacher.face_img.delete()
+                                teacher.right_thumb_img.delete()
+                                teacher.right_index_img.delete()
+                                teacher.right_middle_img.delete()
+                                teacher.right_ring_img.delete()
+                                teacher.right_little_img.delete()
                                 messages.error(request, "Error processing the image, please upload a clear Face Picture!")
                                 context = {
                                     'user': user,
@@ -322,12 +329,19 @@ def completeSignup(request):
                                 }
                                 return render(request, 'authentication/complete_signup.html', context)
                             if len(faces) < 1:
-                                os.remove(reg.face_img.path)
-                                os.remove(reg.right_thumb_img.path)
-                                os.remove(reg.right_index_img.path)
-                                os.remove(reg.right_middle_img.path)
-                                os.remove(reg.right_ring_img.path)
-                                os.remove(reg.right_little_img.path)
+                                os.remove(teacher.face_img.path)
+                                teacher.face_img.delete()
+                                os.remove(teacher.right_thumb_img.path)
+                                os.remove(teacher.right_index_img.path)
+                                os.remove(teacher.right_middle_img.path)
+                                os.remove(teacher.right_ring_img.path)
+                                os.remove(teacher.right_little_img.path)
+                                teacher.face_img.delete()
+                                teacher.right_thumb_img.delete()
+                                teacher.right_index_img.delete()
+                                teacher.right_middle_img.delete()
+                                teacher.right_ring_img.delete()
+                                teacher.right_little_img.delete()
                                 messages.error(request, "No face detected, please upload a clear Face Picture")
                                 context = {
                                     'user': user,
@@ -335,12 +349,18 @@ def completeSignup(request):
                                 }
                                 return render(request, 'authentication/complete_signup.html', context)
                             elif len(faces) > 1:
-                                os.remove(reg.face_img.path)
-                                os.remove(reg.right_thumb_img.path)
-                                os.remove(reg.right_index_img.path)
-                                os.remove(reg.right_middle_img.path)
-                                os.remove(reg.right_ring_img.path)
-                                os.remove(reg.right_little_img.path)
+                                os.remove(teacher.face_img.path)
+                                os.remove(teacher.right_thumb_img.path)
+                                os.remove(teacher.right_index_img.path)
+                                os.remove(teacher.right_middle_img.path)
+                                os.remove(teacher.right_ring_img.path)
+                                os.remove(teacher.right_little_img.path)
+                                teacher.face_img.delete()
+                                teacher.right_thumb_img.delete()
+                                teacher.right_index_img.delete()
+                                teacher.right_middle_img.delete()
+                                teacher.right_ring_img.delete()
+                                teacher.right_little_img.delete()
                                 messages.error(request, "Multiple faces detected, please upload a picture containing only the User's Face")
                                 context = {
                                     'user': user,
@@ -353,7 +373,6 @@ def completeSignup(request):
                                 np_bytes = pickle.dumps(encodings)
                                 np_base64 = base64.b64encode(np_bytes)
                                 teacher.face_encodings = np_base64
-                                teacher.save()
                             
                                 # Extracting keypoints and descriptors from fingerprint samples and saving in the database
                                 sift = cv2.SIFT_create()
@@ -405,8 +424,9 @@ def completeSignup(request):
                                 teacher.right_little_descriptors = encoded_descriptors[4]
 
                         try:
-                            pendingReg = PendingRegistration.objects.get(teacher=teacher)
-                            pendingReg.delete()
+                            pr = PendingRegistration.objects.get(teacher=teacher)
+                            print('Pending Registration: ', pr)
+                            pr.delete()
                         except:
                             pass
 
@@ -415,7 +435,7 @@ def completeSignup(request):
                             current_site = get_current_site(request)
                             email_subject = "Confirm your email @ FRAMS - Login!!"
                             message2 = render_to_string("authentication/email_confirmation.html", {
-                                'email': user.email,
+                                'name': teacher.teacher_name,
                                 'domain': current_site.domain,
                                 'uid': force_str(urlsafe_base64_encode(force_bytes(user.pk))),
                                 'token': generate_token.make_token(user)
@@ -423,12 +443,21 @@ def completeSignup(request):
                             email = EmailMessage(email_subject, message2, settings.EMAIL_HOST_USER, [user.email])
                             email.send()
                         except:
-                            os.remove(reg.face_img.path)
-                            os.remove(reg.right_thumb_img.path)
-                            os.remove(reg.right_index_img.path)
-                            os.remove(reg.right_middle_img.path)
-                            os.remove(reg.right_ring_img.path)
-                            os.remove(reg.right_little_img.path)
+                            try:
+                                os.remove(teacher.face_img.path)
+                                os.remove(teacher.right_thumb_img.path)
+                                os.remove(teacher.right_index_img.path)
+                                os.remove(teacher.right_middle_img.path)
+                                os.remove(teacher.right_ring_img.path)
+                                os.remove(teacher.right_little_img.path)
+                                teacher.face_img.delete()
+                                teacher.right_thumb_img.delete()
+                                teacher.right_index_img.delete()
+                                teacher.right_middle_img.delete()
+                                teacher.right_ring_img.delete()
+                                teacher.right_little_img.delete()
+                            except:
+                                pass
                             pr = PendingRegistration(teacher=teacher)
                             pr.save()
                             messages.error(request, "Sending verification email failed!")

@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en" >
   <head>
@@ -6,6 +7,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1"><link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css'>
+    <link rel="shortcut icon" type="image/png" href="{% static 'ficon.png' %}"/>
     <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/metisMenu/2.2.0/metisMenu.min.css'>
     <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/timelinejs/2.36.0/css/timeline.css'>
     <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.1/morris.css'>
@@ -36,7 +38,7 @@
           <div class="sidebar-nav navbar-collapse">
             <ul class="nav" id="side-menu">
               <li><a href={% url 'office_home' %}><i class="fa fa-home"></i> Home</a></li>
-              <li><a href="/admin"><i class="fa fa-cog"></i> Admin Panel</a></li>
+              <li><a href="/admin"><i class="fa fa-cog"></i> Data</a></li>
               <li><a href="#"><i class="fa fa-user-plus"></i> Teacher<span class="fa arrow"></span></a>
                 <ul class="nav nav-second-level">
                   <li><a href={% url 'add_teacher' %}>Add Teacher</a></li>

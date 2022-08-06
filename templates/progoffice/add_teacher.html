@@ -445,6 +445,9 @@
 
 {% block js %}
   <script>
+    $(function () {
+      $("input").attr('required', true)
+    })
     $(function() {
       $('#id_teacher_status').change(function(){
         let value = $('#id_teacher_status').val();
