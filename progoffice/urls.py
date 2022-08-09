@@ -17,4 +17,6 @@ urlpatterns = [
     path('student-report/', views.studentReport, name='student_report_admin'),
     path('generate-teacher-csv/', views.generateTeacherCSV, name='generate_teacher_csv'),
     path('generate-student-csv/', views.generateStudentCSV, name='generate_student_csv'),
+    path('course-report/', views.courseReport, name='course_report_admin'),
+    path('generate-course-csv/', views.generateCourseCSV, name='generate_course_csv_admin'),
 ]

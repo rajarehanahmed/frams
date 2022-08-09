@@ -1,7 +1,7 @@
 from dataclasses import fields
 import re
 from django import forms
-from .models import Attendance, BulkAttendance, SearchStudent, Student, Teacher
+from .models import Attendance, BulkAttendance, Course, SearchStudent, Student, Teacher, Timetable
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 
@@ -141,13 +141,12 @@ class SearchStudentForm(forms.ModelForm):
         self.fields['course'].required = False
 
 
-# class SearchTeacherForm(forms.Form):
-#     email = forms.EmailField()
-#     # date = fields.DateField(
-#     #     input_formats=['%d/%m/%Y'],
-#     #     widget=widgets.DatePickerWidget(
-#     #         format='%d/%m/%Y'
-#     #     )
-#     # )
-#     start_date = forms.DateField(widget=DatePickerInput())
-#     end_date = forms.DateField(widget=DatePickerInput())
+class SearchCourseForm(forms.ModelForm):
+    class Meta:
+        model = Timetable
+        fields = ('course',)
+
+    course = forms.ModelChoiceField(
+        queryset=Course.objects.all(),
+        label='Course',
+    )

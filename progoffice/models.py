@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from datetime import datetime
 from .import myFields
+from django.contrib import admin
 
 
 class Teacher(models.Model):
@@ -42,6 +43,9 @@ class Teacher(models.Model):
         else:
             return self.teacher_name + " (Permanent)"
 
+class TeacherAdminModel(admin.ModelAdmin):
+    search_fields=('teacher_name', 'teacher_designation', 'teacher_status',)
+
 
 class Attendance(models.Model):
     id = models.AutoField
@@ -68,9 +72,12 @@ class Course(models.Model):
 
     def __str__(self):
         if self.teacher is not None:
-            return self.course_code + " | " + self.course_name + " | " + self.teacher.teacher_name
+            return f'{self.course_code} {self.course_name} | {self.teacher.teacher_name}'
         else:
-            return self.course_code + " | " + self.course_name
+            return f'{self.course_code} {self.course_name}'
+
+class CourseAdminModel(admin.ModelAdmin):
+    search_fields=('course_code', 'course_name')
 
 
 class ClassRoom(models.Model):
@@ -90,13 +97,17 @@ class ClassTiming(models.Model):
 
 class Timetable(models.Model):
     id = models.AutoField
-    day = myFields.DayOfTheWeekField(default="")
-    time = models.ForeignKey(ClassTiming, on_delete=models.CASCADE, null=True)
+    day = myFields.DayOfTheWeekField()
+    time = models.ForeignKey(ClassTiming, on_delete=models.CASCADE)
     room = models.ForeignKey(ClassRoom, on_delete=models.CASCADE)
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, default="")
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
 
     def __str__(self):
-        return 'Room' + str(self.room.room_no) + '  :  ' + str(self.time.start_time) + ' - ' + str(self.time.end_time)
+        return f'Room {str(self.room)} : Day{self.day} - {str(self.time)} | {str(self.course)} '
+
+
+class TimetableAdminModel(admin.ModelAdmin):
+    search_fields=('day',)
 
 
 class Student(models.Model):
@@ -110,7 +121,7 @@ class Student(models.Model):
 
 
     def __str__(self):
-        return self.reg_no + ' ' + self.student_name
+        return f'{self.reg_no} : {self.student_name}'
 
 
 class StudentAttendance(models.Model):
@@ -120,12 +131,12 @@ class StudentAttendance(models.Model):
     )
     id = models.AutoField
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
-    time = models.DateTimeField(null=True)
+    time = models.DateTimeField()
     course = models.ForeignKey(Course, on_delete=models.CASCADE, null=True)
     status = models.CharField(max_length=1, choices=Attendance_Statuses, null=True)
 
     def __str__(self):
-        return self.student.reg_no + " " + self.student.student_name
+        return f'{self.status} | {self.time} | {self.student} | {self.course}'
 
 
 class BulkAttendance(models.Model):
@@ -143,10 +154,6 @@ class SearchStudent(models.Model):
     reg_no = models.CharField(max_length=20, null=True)
     course = models.ForeignKey(Course, on_delete=models.CASCADE, null=True)
 
-
-# class SearchTeacher(models.Model):
-#     id = models.AutoField
-#     teacher = models.
 
 class DataCSV(models.Model):
     data = models.BinaryField()

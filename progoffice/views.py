@@ -18,7 +18,7 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 
 from .models import Attendance, ClassTiming, DataCSV, PendingRegistration, ClassRoom, Student, StudentAttendance, Teacher, Timetable
-from .forms import SearchStudentForm, StudentForm, TeacherAttendanceForm, TeacherForm, UserForm, BulkAttendanceForm
+from .forms import SearchCourseForm, SearchStudentForm, StudentForm, TeacherAttendanceForm, TeacherForm, UserForm, BulkAttendanceForm
 
 import cv2
 import numpy as np
@@ -967,21 +967,19 @@ def studentAttendance(request):
                 if form.is_valid():
                     bulkAttendance = form.save()
                     now = datetime.now()
-                    print('Year: ', now.year, ' Month: ', now.month, ' Day: ', now.day)
+                    # print('Year: ', now.year, ' Month: ', now.month, ' Day: ', now.day)
 
-
-                    
                     now = datetime.now()
 
                     curTime = now.time().replace(microsecond=0)
-                    print('Current Time: ', curTime)
+                    # print('Current Time: ', curTime)
                     
                     classTime = None
                     for timing in ClassTiming.objects.all():
                         if timing.start_time <= curTime <= timing.end_time:
                             classTime = timing
-                    print('classTime: ', classTime)
-                    print('Weekday: ', now.weekday())
+                    # print('classTime: ', classTime)
+                    # print('Weekday: ', now.weekday())
                     
                     if classTime is None or now.weekday() > 4:
                         bulkAttendance.delete()
@@ -992,10 +990,11 @@ def studentAttendance(request):
                         counter = 0
                         for classroom in ClassRoom.objects.all()[:2]:
                             counter += 1
-                            print('Counter: ', counter)
-                            timeTable = Timetable.objects.filter(room=classroom, time=classTime)
-                            print('timeTable.count(): ', timeTable.count())
-                            print('Room: ', classroom.room_no)
+                            # print('Counter: ', counter)
+                            # print('Weekday',  now.weekday())
+                            timeTable = Timetable.objects.filter(room=classroom, time=classTime, day=now.weekday())
+                            # print('timeTable.count(): ', timeTable.count())
+                            # print('Room: ', classroom.room_no)
                             if timeTable.count() > 1:
                                 messages.error(request, 'Timetable is incorrect')
                                 return render(request, 'progoffice/student_attendance.html', {'form': BulkAttendanceForm()})
@@ -1004,18 +1003,18 @@ def studentAttendance(request):
                                 continue
                                 # return render(request, 'progoffice/student_attendance.html', {'form': BulkAttendanceForm()})
                             course = timeTable[0].course
-                            print('Course: ', course)
+                            # print('Course: ', course)
                             if course is None:
                                 messages.error(request, f'No course is registered at this time in Room{classroom.room_no}')
                                 continue
                                 # return render(request, 'progoffice/student_attendance.html', {'form': BulkAttendanceForm()})
                             
                             students_enrolled = course.student_set.all()
-                            print('Students Enrolled: ', students_enrolled)
+                            # print('Students Enrolled: ', students_enrolled)
 
                             path = 'media'
                             filename = getattr(bulkAttendance, f'room{classroom.room_no}_img')
-                            print(filename)
+                            # print(filename)
                             try:
                                 img = cv2.imread(f'{path}/{filename}')
                                 img = cv2.resize(img, None, fx=0.25, fy=0.25)
@@ -1043,32 +1042,33 @@ def studentAttendance(request):
                                         continue
                                     pks.append(student)
                                     encodings = pickle.loads(np_bytes)
-                                    print('Type of Encodings fetched: ', type(encodings))
-                                    print('Encodings Stored*********         : ', encodings)
+                                    # print('Type of Encodings fetched: ', type(encodings))
+                                    # print('Encodings Stored*********         : ', encodings)
                                     encodings_known.append(encodings)
-                                    print(encodings_known)
+                                    # print(encodings_known)
 
                                 for encoding in encodings_test:
-                                    matches = face_recognition.compare_faces(encodings_known, encoding, 0.6)
+                                    matches = face_recognition.compare_faces(encodings_known, encoding, 0.5)
                                     faceDis = face_recognition.face_distance(encodings_known, encoding)
                                     
-                                    print('Face Distance: ', faceDis)
+                                    # print('Face Distance: ', faceDis)
                                     matchIndex = np.argmin(faceDis)
 
                                     if matches[matchIndex]:
-                                        print('Matched: ', pks[matchIndex])
+                                        # print('Matched: ', pks[matchIndex])
 
 
                                         student = pks[matchIndex]
-                                        print('Teacher Name: ' + student.student_name)
+                                        print('Student Name: ' + student.student_name)
                                         
                                         try:
-                                            alreadyMarked = StudentAttendance.objects.get(student=student, time__year=now.year, time__month=now.month, time__day=now.day, course=course)
+                                            alreadyMarked = StudentAttendance.objects.get(student=student, time=now, course=course)
+                                            print(alreadyMarked)
                                         except:
-                                            print('already Marked is False')
-                                            alreadyMarked = False
-                                        if alreadyMarked is not False:
-                                            messages.warning(request, student.reg_no + ' ' + student.student_name + 's attendance already marked')
+                                            # print('already Marked is False')
+                                            alreadyMarked = None
+                                        if alreadyMarked is not None:
+                                            messages.warning(request, f'{student}s attendance already marked in {course}')
                                             
                                         else:
                                             attendance = StudentAttendance(student=student, time=now, course=course, status='P')
@@ -1111,13 +1111,11 @@ def studentReport(request):
                     search_instance = form.save()
                     reg_no = search_instance.reg_no
                     course = search_instance.course
-                    print(type(course))
-                    print('REG_NO: ', reg_no)
-                    print('COURSE', course)
-                    print('DATE FROM: ', date_from)
-                    print('DATE TO: ', date_to)
-
-
+                    # print(type(course))
+                    # print('REG_NO: ', reg_no)
+                    # print('COURSE', course)
+                    # print('DATE FROM: ', date_from)
+                    # print('DATE TO: ', date_to)
 
 
                     res = None
@@ -1352,8 +1350,8 @@ def studentReport(request):
                         np_base64 = base64.b64encode(np_bytes)
                         data_csv.data = np_base64
                         data_csv.save()
-                        print('PRIMARY KEY: ***************************', data_csv.pk)
-                        print('TYPE: ', type(data_csv.pk))
+                        # print('PRIMARY KEY: ***************************', data_csv.pk)
+                        # print('TYPE: ', type(data_csv.pk))
                         context = {
                             'search': res,
                             'form': form,
@@ -1370,8 +1368,13 @@ def studentReport(request):
                         }
                     return render(request, 'progoffice/student_report.html', context)
 
-
-                return HttpResponse('Hi there')
+                context = {
+                    'form': form,
+                    'date_from': date_from,
+                    'date_to': date_to,
+                }
+                return render(request, 'progoffice/student_report.html', context)
+                
             else:
                 return render(request, 'progoffice/student_report.html', {'form': SearchStudentForm()})
         else:
@@ -1390,7 +1393,7 @@ def generateTeacherCSV(request):
                 np_bytes = base64.b64decode(data_obj.data)
                 query_set = pickle.loads(np_bytes)
             except:
-                messages.warning(request, 'No dat found!')
+                messages.warning(request, 'No data found!')
                 return redirect('teacher_report')
             response = HttpResponse(content_type='text/csv')
             response['Content-Disposition'] = 'attachment; filename=teacher_report.csv'
@@ -1422,7 +1425,7 @@ def generateStudentCSV(request):
                 np_bytes = base64.b64decode(data_obj.data)
                 query_set = pickle.loads(np_bytes)
             except:
-                messages.warning(request, 'No dat found!')
+                messages.warning(request, 'No data found!')
                 return redirect('student_report')
             response = HttpResponse(content_type='text/csv')
             response['Content-Disposition'] = 'attachment; filename=student_report.csv'
@@ -1433,9 +1436,133 @@ def generateStudentCSV(request):
             writer.writerow(['Sr No', 'Reg No', 'Name', 'Course', 'Date', 'Attendance'])
 
             for count, obj in enumerate(query_set):
-                writer.writerow([count+1, obj.student.reg_no, obj.student.student_name, obj.course, obj.time, obj.status ])
+                writer.writerow([count+1, obj.student.reg_no, obj.student.student_name, obj.course, obj.time, obj.status])
 
             print(query_set)
+
+            return response
+        else:
+            raise Http404()
+    else:
+        return redirect('index')
+
+
+def courseReport(request):
+    if request.user.is_authenticated:
+        if request.user.is_superuser:
+            if request.method == 'POST':
+                form = SearchCourseForm(request.POST)
+                if form.is_valid():
+                    course = form.cleaned_data['course']
+                    classTimes = StudentAttendance.objects.filter(course=course).datetimes('time', kind='second', order='ASC')
+                    attendanceSheet = []
+                    attendancePercentage = []
+                    studentsEnrolled = course.student_set.all().order_by('reg_no')
+                    if classTimes.count() > 1:
+                        for student in studentsEnrolled:
+                            presentCount = 0
+                            studentAttendance = []
+                            for time in classTimes:
+                                try:
+                                    data = StudentAttendance.objects.get(student=student, time=time, course=course)
+                                except:
+                                    data = None
+                                
+                                if data is not None:
+                                    studentAttendance.append('P')
+                                    presentCount += 1
+                                else:
+                                    studentAttendance.append('A')
+                            attendancePercentage.append(round(presentCount/classTimes.count()*100, 2))
+                            print('Percentage: ', attendancePercentage)
+                            attendanceSheet.append(studentAttendance)
+                    
+                    if len(attendanceSheet) > 0:
+                        data_csv = DataCSV()
+                        data = {
+                            'course': course,
+                            'class_times': classTimes,
+                            'attendance_sheet': zip(attendanceSheet, studentsEnrolled, attendancePercentage)
+                        }
+                        np_bytes = pickle.dumps(data)
+                        np_base64 = base64.b64encode(np_bytes)
+                        data_csv.data = np_base64
+                        data_csv.save()
+                        context = {
+                            'form': form,
+                            'course': course,
+                            'class_times': classTimes,
+                            'attendance_sheet': zip(attendanceSheet, studentsEnrolled, attendancePercentage),
+                            'data_obj_pk': data_csv.pk,
+                        }
+                    else:
+                        data_csv = DataCSV()
+                        data = {
+                            'course': course,
+                            'students_enrolled': studentsEnrolled,
+                        }
+                        np_bytes = pickle.dumps(data)
+                        np_base64 = base64.b64encode(np_bytes)
+                        data_csv.data = np_base64
+                        data_csv.save()
+                        context = {
+                            'form': form,
+                            'course': course,
+                            'students_enrolled': studentsEnrolled,
+                            'data_obj_pk': data_csv.pk,
+                        }
+                    return render(request, 'progoffice/course_report.html', context)
+
+                else:
+                    messages.error(request, 'Error fetching the form, please try again!!')
+                    return redirect('course_report_admin')
+            
+            else:
+                return render(request, 'progoffice/course_report.html', {'form': SearchCourseForm()})
+        else:
+            raise Http404()
+    else:
+        return redirect('index')
+
+
+def generateCourseCSV(request):
+    if request.user.is_authenticated:
+        if request.user.is_superuser:
+            pk = request.GET['pk']
+            print(pk)
+            try:
+                data_obj = DataCSV.objects.get(pk=pk)
+                np_bytes = base64.b64decode(data_obj.data)
+                dict = pickle.loads(np_bytes)
+            except:
+                messages.warning(request, 'No data found!')
+                return redirect('course_report')
+            
+            response = HttpResponse(content_type='text/csv')
+            response['Content-Disposition'] = 'attachment; filename=course_report.csv'
+
+            # Create a CSV writer
+            writer = csv.writer(response)
+            
+            # try:
+            course = dict['course']
+            writer.writerow([course])
+            if 'students_enrolled' in dict.keys():
+                writer.writerow(['Sr No', 'Reg#', 'Student Name', 'Percentage'])
+                studentsEnrolled = dict['students_enrolled']
+                for count, student in enumerate(studentsEnrolled):
+                    writer.writerow([count+1, student.reg_no, student.student_name])
+            else:
+                attendanceSheet = dict['attendance_sheet']
+                classTimes = list(dict['class_times'])
+                writer.writerow(['Sr No', 'Reg#', 'Student Name'] + classTimes + ['Percentage'])
+                count = 0
+                for attendance, student, percentage in attendanceSheet:
+                    count += 1
+                    writer.writerow([count, student.reg_no, student.student_name] + list(attendance) + [percentage])
+                
+            # except:
+            #     pass
 
             return response
         else:

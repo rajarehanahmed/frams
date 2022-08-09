@@ -3,83 +3,83 @@
 {% block title %}Teacher | Home{% endblock title %}
 
 {% block body %}
-    <br><br>
-
-    {% for course in courses %}
-        <div style="margin-top: 70px;" class="col-lg-3 col-md-6">
-            <div class="panel panel-green card">
-                <div class="panel-heading">
-                <div class="row">
-                    <div class="col-xs-3"><i class="fa fa-check fa-5x"></i></div>
-                    <div class="col-xs-9 text-right">
-                    <div class="huge">{{ course }}</div>
-                    <!-- <div>Cousrse Name</div> -->
+    <div class="col-lg-12">
+        {% for course in courses %}
+            <div style="margin-top: 70px;" class="col-lg-3 col-md-6">
+                <div class="panel panel-green card">
+                    <div class="panel-heading">
+                    <div class="row">
+                        <div class="col-xs-3"><i class="fa fa-check fa-5x"></i></div>
+                        <div class="col-xs-9 text-right">
+                        <div class="huge">{{ course }}</div>
+                        <!-- <div>Cousrse Name</div> -->
+                        </div>
                     </div>
+                    </div><a href={% url 'course_report' %}?pk={{ course.pk }}>
+                    <div class="panel-footer"><span class="pull-left">View Attendance</span><span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                        <div class="clearfix"></div>
+                    </div></a>
                 </div>
-                </div><a href="#">
-                <div class="panel-footer"><span class="pull-left">View Attendance</span><span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
-                    <div class="clearfix"></div>
-                </div></a>
             </div>
-        </div>
-    {% endfor %}
-    <br><br>
-    <br><br>
-
-    <h1 style="margin-top: 140px">Current Month Attendance</h1>
-
-    <div class="month">      
-    <ul>
-        <!-- <li class="prev">&#10094;</li>
-        <li class="next">&#10095;</li> -->
-        <li>
-        Month<br>
-        <span style="font-size:18px">2021</span>
-        </li>
-    </ul>
+        {% endfor %}
     </div>
 
-    <ul class="weekdays">
-    <li>Mo</li>
-    <li>Tu</li>
-    <li>We</li>
-    <li>Th</li>
-    <li>Fr</li>
-    <li>Sa</li>
-    <li>Su</li>
-    </ul>
+    <div class="col-lg-12">
+        <h1>Your Attendance This Month</h1>
 
-    <ul class="days">  
-    <li>1</li>
-    <li>2</li>
-    <li>3</li>
-    <li>4</li>
-    <li>5</li>
-    <li>6</li>
-    <li>7</li>
-    <li>8</li>
-    <li>9</li>
-    <li><span class="active">10</span></li>
-    <li>11</li>
-    <li>12</li>
-    <li>13</li>
-    <li>14</li>
-    <li>15</li>
-    <li>16</li>
-    <li>17</li>
-    <li>18</li>
-    <li>19</li>
-    <li>20</li>
-    <li>21</li>
-    <li>22</li>
-    <li>23</li>
-    <li>24</li>
-    <li>25</li>
-    <li>26</li>
-    <li>27</li>
-    <li>28</li>
-    <li>29</li>
-    <li>30</li>
-    <li>31</li>
-    </ul>
+        <div class="month">      
+        <ul>
+            <!-- <li class="prev">&#10094;</li>
+            <li class="next">&#10095;</li> -->
+            <li>
+            Month<br>
+            <span style="font-size:18px">2021</span>
+            </li>
+        </ul>
+        </div>
+
+        <ul class="weekdays">
+        <li>Mo</li>
+        <li>Tu</li>
+        <li>We</li>
+        <li>Th</li>
+        <li>Fr</li>
+        <li>Sa</li>
+        <li>Su</li>
+        </ul>
+
+        <ul class="days">  
+        <li>1</li>
+        <li>2</li>
+        <li>3</li>
+        <li>4</li>
+        <li>5</li>
+        <li>6</li>
+        <li>7</li>
+        <li>8</li>
+        <li>9</li>
+        <li><span class="active">10</span></li>
+        <li>11</li>
+        <li>12</li>
+        <li>13</li>
+        <li>14</li>
+        <li>15</li>
+        <li>16</li>
+        <li>17</li>
+        <li>18</li>
+        <li>19</li>
+        <li>20</li>
+        <li>21</li>
+        <li>22</li>
+        <li>23</li>
+        <li>24</li>
+        <li>25</li>
+        <li>26</li>
+        <li>27</li>
+        <li>28</li>
+        <li>29</li>
+        <li>30</li>
+        <li>31</li>
+        </ul>
+    </div>
 {% endblock body %}

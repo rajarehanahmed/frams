@@ -4,7 +4,7 @@ from datetime import datetime
 import pickle
 from django.http import Http404, HttpResponse
 from django.shortcuts import render, redirect
-from .forms import SearchStudentForm
+from .forms import SearchCourseForm, SearchStudentForm
 from progoffice.models import Attendance, Course, DataCSV, Student, StudentAttendance, Teacher
 from django.contrib import messages
 from django.db.models import Count, Q
@@ -26,18 +26,18 @@ def home(request):
         return redirect('signin')
 
 
-def profile(request):
-    if request.user.is_authenticated:
-        teacher = Teacher.objects.get(user_id=request.user)
-        context = {
-            'teacher_name':  teacher.teacher_name,
-            'teacher_designation': teacher.teacher_designation,
-            'teacher_status': teacher.teacher_status,
-            'created_at': teacher.created_at
-        }
-        return render(request, 'teacher/profile.html', context)
-    else:
-        return redirect('index')
+# def profile(request):
+#     if request.user.is_authenticated:
+#         teacher = Teacher.objects.get(user_id=request.user)
+#         context = {
+#             'teacher_name':  teacher.teacher_name,
+#             'teacher_designation': teacher.teacher_designation,
+#             'teacher_status': teacher.teacher_status,
+#             'created_at': teacher.created_at
+#         }
+#         return render(request, 'teacher/profile.html', context)
+#     else:
+#         return redirect('index')
 
 
 def teacherReport(request):
@@ -139,6 +139,7 @@ def teacherReport(request):
     else:
         return redirect('index')
 
+
 def generateTeacherCSV(request):
     if request.user.is_authenticated:
         pk = request.GET['pk']
@@ -185,14 +186,7 @@ def studentReport(request):
             if form.is_valid():
                 reg_no = form.cleaned_data['reg_no']
                 course = form.cleaned_data['course']
-                print('REG_NO: ', reg_no)
-                print('COURSE: ', course, 'COURSE TYPE: ', type(course))
-                print('DATE_FROM: ', date_from)
-                print('DATE_TO: ', date_to)
-
-
-
-
+    
                 res = None
                 today = datetime.today().strftime('%Y-%m-%d')
                 today_obj = datetime.strptime(today, '%Y-%m-%d')
@@ -222,7 +216,7 @@ def studentReport(request):
                             res = None
                 
                 elif reg_no and not course and date_from and date_to:
-                    print('***********************************:LJ:LFHD*****************************************')
+                    # print('***********************************:LJ:LFHD*****************************************')
                     start_date = datetime.strptime(date_from, "%Y-%m-%d")
                     end_date = datetime.strptime(date_to, "%Y-%m-%d")
                     try:
@@ -442,8 +436,8 @@ def studentReport(request):
                     np_base64 = base64.b64encode(np_bytes)
                     data_csv.data = np_base64
                     data_csv.save()
-                    print('PRIMARY KEY: ***************************', data_csv.pk)
-                    print('TYPE: ', type(data_csv.pk))
+                    # print('PRIMARY KEY: ***************************', data_csv.pk)
+                    # print('TYPE: ', type(data_csv.pk))
                     context = {
                         'search': res,
                         'form': form,
@@ -460,6 +454,9 @@ def studentReport(request):
                     }
                 return render(request, 'teacher/student_report.html', context)
 
+            else:
+                messages.error(request, 'Error fetching the form, please try again!!')
+                return redirect('course_report')
 
         else:
             try:
@@ -496,5 +493,130 @@ def generateStudentCSV(request):
 
         print(query_set)
         return response
+    else:
+        return redirect('index')
+
+
+def courseReport(request):
+    if request.user.is_authenticated and request.user.is_superuser:
+        return redirect('index')
+    elif request.user.is_authenticated and not request.user.is_superuser:
+        if request.method == 'GET':
+            pk = request.GET['pk']
+            try:
+                course = Course.objects.get(pk=pk)
+            except:
+                messages.error(request, 'Course not found, please try again!')
+                return redirect('index')
+
+
+            classTimes = StudentAttendance.objects.filter(course=course).datetimes('time', kind='second', order='ASC')
+            attendanceSheet = []
+            attendancePercentage = []
+            studentsEnrolled = course.student_set.all().order_by('reg_no')
+            if classTimes.count() > 1:
+                for student in studentsEnrolled:
+                    presentCount = 0
+                    studentAttendance = []
+                    for time in classTimes:
+                        try:
+                            data = StudentAttendance.objects.get(student=student, time=time, course=course)
+                        except:
+                            data = None
+                        
+                        if data is not None:
+                            studentAttendance.append('P')
+                            presentCount += 1
+                        else:
+                            studentAttendance.append('A')
+                    attendancePercentage.append(round(presentCount/classTimes.count()*100, 2))
+                    print('Percentage: ', attendancePercentage)
+                    attendanceSheet.append(studentAttendance)
+                
+            if len(attendanceSheet) > 0:
+                data_csv = DataCSV()
+                data = {
+                    'course': course,
+                    'class_times': classTimes,
+                    'attendance_sheet': zip(attendanceSheet, studentsEnrolled, attendancePercentage)
+                }
+                np_bytes = pickle.dumps(data)
+                np_base64 = base64.b64encode(np_bytes)
+                data_csv.data = np_base64
+                data_csv.save()
+                context = {
+                    'course': course,
+                    'class_times': classTimes,
+                    'attendance_sheet': zip(attendanceSheet, studentsEnrolled, attendancePercentage),
+                    'data_obj_pk': data_csv.pk,
+                }
+            else:
+                data_csv = DataCSV()
+                data = {
+                    'course': course,
+                    'students_enrolled': studentsEnrolled,
+                }
+                np_bytes = pickle.dumps(data)
+                np_base64 = base64.b64encode(np_bytes)
+                data_csv.data = np_base64
+                data_csv.save()
+                context = {
+                    'course': course,
+                    'students_enrolled': studentsEnrolled,
+                    'data_obj_pk': data_csv.pk,
+                }
+            
+            return render(request, 'teacher/course_report.html', context)
+
+        else:
+            raise Http404('Page not found')
+        
+    else:
+        return redirect('index')
+
+
+def generateCourseCSV(request):
+    if request.user.is_authenticated:
+        if not request.user.is_superuser:
+            pk = request.GET['pk']
+            print(pk)
+            try:
+                data_obj = DataCSV.objects.get(pk=pk)
+                np_bytes = base64.b64decode(data_obj.data)
+                dict = pickle.loads(np_bytes)
+            except:
+                messages.warning(request, 'No data found!')
+                return redirect('course_report')
+            
+            response = HttpResponse(content_type='text/csv')
+            response['Content-Disposition'] = 'attachment; filename=course_report.csv'
+
+            # Create a CSV writer
+            writer = csv.writer(response)
+            
+            try:
+                course = dict['course']
+                writer.writerow([course])
+                if 'students_enrolled' in dict.keys():
+                    writer.writerow(['Sr No', 'Reg#', 'Student Name', 'Percentage'])
+                    studentsEnrolled = dict['students_enrolled']
+                    for count, student in enumerate(studentsEnrolled):
+                        writer.writerow([count+1, student.reg_no, student.student_name])
+                else:
+                    attendanceSheet = dict['attendance_sheet']
+                    classTimes = list(dict['class_times'])
+                    writer.writerow(['Sr No', 'Reg#', 'Student Name'] + classTimes + ['Percentage'])
+                    count = 0
+                    for attendance, student, percentage in attendanceSheet:
+                        count += 1
+                        writer.writerow([count, student.reg_no, student.student_name] + list(attendance) + [percentage])
+                
+            except:
+                messages.error(request, 'Error fetching data, please try again')
+                return redirect('course_report')
+
+            return response
+        else:
+            raise Http404()
     else:
         return redirect('index')

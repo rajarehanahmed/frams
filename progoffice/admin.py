@@ -1,14 +1,11 @@
 from django.contrib import admin
-from .models import Attendance, ClassTiming, Student, Teacher, Course, PendingRegistration, ClassRoom, Timetable, StudentAttendance, BulkAttendance#, TeacherAttendance
-
-admin.site.site_header = 'F R A M S'
+from .models import Attendance, ClassTiming, Student, Teacher, TeacherAdminModel, Course, CourseAdminModel, ClassRoom, Timetable, TimetableAdminModel, StudentAttendance, BulkAttendance
 
 admin.site.register(Student)
-admin.site.register(Teacher)
-admin.site.register(Course)
-admin.site.register(PendingRegistration)
+admin.site.register(Teacher, TeacherAdminModel)
+admin.site.register(Course, CourseAdminModel)
 admin.site.register(ClassRoom)
-admin.site.register(Timetable)
+admin.site.register(Timetable, TimetableAdminModel)
 admin.site.register(StudentAttendance)
 admin.site.register(Attendance)
 admin.site.register(BulkAttendance)

@@ -1,0 +1,73 @@
+{% extends 'teacher/base.html' %}
+
+{% block title %} Course Report {% endblock title %}
+
+{% block body %}
+    <div class="col-lg-12">
+        {% if attendance_sheet %}
+            <div class="table-responsive">
+                <table class="table table-bordered" style="margin: 10px; margin-top: 70px">
+                    <thead>
+                        <tr>
+                            <th colspan="1000" scope="col">{{ course }}</th>
+                        </tr>
+                        <tr>
+                            <th scope="col">Sr No</th>
+                            <th scope="col">Reg#</th>
+                            <th scope="col">Student Name</th>
+                            {% for class in class_times %}
+                                <th scope="col">{{ class }}</th>
+                            {% endfor %}
+                            <th scope="col">Percentage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for attendance, student, percentage in attendance_sheet %}
+                            <tr>
+                                <td scope="row">{{ forloop.counter }}</td>
+                                <td scope"row">{{ student.reg_no }}</td>
+                                <td scope"row">{{ student.student_name }}</td>
+                                
+                                {% for status in attendance %}
+                                    <td>{{ status }}</td>
+                                {% endfor %}
+                                <td>{{ percentage }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="csv-btn" style="margin: 10px">
+                <a href="{% url 'generate_course_csv' %}?pk={{ data_obj_pk }}"><button type="submit" class="btn btn-primary">Download CSV</i></button></a>
+            </div>
+        {% elif course %}
+            <div class="table-responsive">
+                <table class="table table-bordered" style="margin: 10px; margin-top: 70px">
+                    <thead>
+                        <tr>
+                            <th colspan="1000" scope="col">{{ course }}</th>
+                        </tr>
+                        <tr>
+                            <th scope="col">Sr No</th>
+                            <th scope="col">Reg#</th>
+                            <th scope="col">Student Name</th>
+                            <th scope="col">Percentage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in students_enrolled %}
+                            <tr>
+                                <td scope="row">{{ forloop.counter }}</td>
+                                <td scope="row">{{ student.reg_no }}</td>
+                                <td scope="row">{{ student.student_name }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="csv-btn" style="margin: 10px">
+                <a href="{% url 'generate_course_csv' %}?pk={{ data_obj_pk }}"><button type="submit" class="btn btn-primary">Download CSV</i></button></a>
+            </div>
+        {% endif %}
+    </div>
+{% endblock body %}

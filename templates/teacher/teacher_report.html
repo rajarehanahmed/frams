@@ -4,7 +4,7 @@
 
 {% block body %}
 
-    <form method="POST" action="teacher_report">
+    <form method="POST" action={% url 'teacher_report' %}>
         {% csrf_token %}
         <div class="search" style="margin-top: 50px">
             <label for="date_from">Date From</label>

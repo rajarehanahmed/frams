@@ -2,11 +2,11 @@ from django.db import models
 from django.utils.translation import gettext as _
 
 DAY_OF_THE_WEEK = {
-    '1' : _(u'Monday'),
-    '2' : _(u'Tuesday'),
-    '3' : _(u'Wednesday'),
-    '4' : _(u'Thursday'),
-    '5' : _(u'Friday'),
+    '0' : _(u'Monday'),
+    '1' : _(u'Tuesday'),
+    '2' : _(u'Wednesday'),
+    '3' : _(u'Thursday'),
+    '4' : _(u'Friday'),
 }
 
 class DayOfTheWeekField(models.CharField):

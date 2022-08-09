@@ -18,13 +18,28 @@ class SearchStudentForm(forms.ModelForm):
     )
 
     def __init__(self, *args, **kwargs):
-        print('reached')
         teacher = args[1] or None
-        print(teacher)
         forms.ModelForm.__init__(self, *args, **kwargs)
-        print('After')
         self.fields['course'].queryset = Course.objects.filter(teacher=teacher)
-        print(self.fields['course'].queryset)
+        self.fields['reg_no'].required = False
+        self.fields['course'].required = False
+
+
+class SearchCourseForm(forms.ModelForm):
+    class Meta:
+        model = Timetable
+        fields = ('course',)
+
+    reg_no = forms.CharField(max_length=20)
+    course = forms.ModelChoiceField(
+        queryset=Course.objects.none(),
+        label='Course',
+    )
+
+    def __init__(self, *args, **kwargs):
+        teacher = args[1] or None
+        forms.ModelForm.__init__(self, *args, **kwargs)
+        self.fields['course'].queryset = Course.objects.filter(teacher=teacher)
         self.fields['reg_no'].required = False
         self.fields['course'].required = False
 
