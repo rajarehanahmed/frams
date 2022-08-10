@@ -5,7 +5,7 @@ import pickle
 from django.http import Http404, HttpResponse
 from django.shortcuts import render, redirect
 from .forms import SearchCourseForm, SearchStudentForm
-from progoffice.models import Attendance, Course, DataCSV, Student, StudentAttendance, Teacher
+from progoffice.models import Attendance, ClassTiming, Course, DataCSV, Student, StudentAttendance, Teacher
 from django.contrib import messages
 from django.db.models import Count, Q
 
@@ -510,34 +510,56 @@ def courseReport(request):
                 return redirect('index')
 
 
-            classTimes = StudentAttendance.objects.filter(course=course).datetimes('time', kind='second', order='ASC')
+            classDates = StudentAttendance.objects.filter(course=course).dates('time', kind='day', order='ASC')
+            
+            classTimings = []
+            totalClasses = 0
+            for date in classDates:
+                pkTimings = StudentAttendance.objects.filter(course=course, time__year=date.year, time__month=date.month, time__day=date.day).values('class_timing').distinct()
+                classTimesDay = []
+                for pk in pkTimings:
+                    classTimesDay.append(ClassTiming.objects.get(pk=pk['class_timing']))
+                classTimings.append(classTimesDay)
+                totalClasses += len(classTimesDay)
+                    
             attendanceSheet = []
             attendancePercentage = []
             studentsEnrolled = course.student_set.all().order_by('reg_no')
-            if classTimes.count() > 1:
+            if classDates.count() > 0:
                 for student in studentsEnrolled:
                     presentCount = 0
                     studentAttendance = []
-                    for time in classTimes:
-                        try:
-                            data = StudentAttendance.objects.get(student=student, time=time, course=course)
-                        except:
-                            data = None
-                        
-                        if data is not None:
-                            studentAttendance.append('P')
-                            presentCount += 1
-                        else:
-                            studentAttendance.append('A')
-                    attendancePercentage.append(round(presentCount/classTimes.count()*100, 2))
-                    print('Percentage: ', attendancePercentage)
+                    counter = 0
+                    for date in classDates:
+                        for timing in classTimings[counter]:
+                            try:
+                                data = StudentAttendance.objects.get(student=student, course=course, time__year=date.year, time__month=date.month, time__day=date.day, class_timing=timing)
+                            except:
+                                data = None
+                            
+                            print('Data: ', data)
+                            if data is not None:
+                                studentAttendance.append(data.status)
+                                if data.status == 'P':
+                                    presentCount += 1
+                            else:
+                                studentAttendance.append('A')
+                        counter += 1
+                    attendancePercentage.append(round(presentCount/totalClasses*100, 2))
                     attendanceSheet.append(studentAttendance)
-                
+            
+            counter = 0
+            classes = []
+            for date in classDates:
+                for timing in classTimings[counter]:
+                    classes.append(f'{date} {timing}')
+                counter += 1
+
             if len(attendanceSheet) > 0:
                 data_csv = DataCSV()
                 data = {
                     'course': course,
-                    'class_times': classTimes,
+                    'class_times': classes,
                     'attendance_sheet': zip(attendanceSheet, studentsEnrolled, attendancePercentage)
                 }
                 np_bytes = pickle.dumps(data)
@@ -546,7 +568,7 @@ def courseReport(request):
                 data_csv.save()
                 context = {
                     'course': course,
-                    'class_times': classTimes,
+                    'class_times': classes,
                     'attendance_sheet': zip(attendanceSheet, studentsEnrolled, attendancePercentage),
                     'data_obj_pk': data_csv.pk,
                 }

@@ -131,6 +131,7 @@ class StudentAttendance(models.Model):
     )
     id = models.AutoField
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    class_timing = models.ForeignKey(ClassTiming, on_delete=models.SET_NULL, null=True)
     time = models.DateTimeField()
     course = models.ForeignKey(Course, on_delete=models.CASCADE, null=True)
     status = models.CharField(max_length=1, choices=Attendance_Statuses, null=True)

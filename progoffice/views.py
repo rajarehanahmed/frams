@@ -17,7 +17,7 @@ from frams import settings
 from django.contrib.auth.models import User
 from django.contrib import messages
 
-from .models import Attendance, ClassTiming, DataCSV, PendingRegistration, ClassRoom, Student, StudentAttendance, Teacher, Timetable
+from .models import Attendance, BulkAttendance, ClassTiming, DataCSV, PendingRegistration, ClassRoom, Student, StudentAttendance, Teacher, Timetable
 from .forms import SearchCourseForm, SearchStudentForm, StudentForm, TeacherAttendanceForm, TeacherForm, UserForm, BulkAttendanceForm
 
 import cv2
@@ -980,34 +980,38 @@ def studentAttendance(request):
                             classTime = timing
                     # print('classTime: ', classTime)
                     # print('Weekday: ', now.weekday())
-                    
-                    if classTime is None or now.weekday() > 4:
+                    currentClasses = Timetable.objects.filter(time=classTime, day=now.weekday())
+                    if classTime is None or now.weekday() > 4 or currentClasses.count() < 1:
                         bulkAttendance.delete()
                         messages.error(request, 'No class at this time')
-                        return render(request, 'progoffice/student_attendance.html', {'form': BulkAttendanceForm()})
+                        return redirect('student_attendance')
+                    alreadyTaken = BulkAttendance.objects.filter(Q(time__range=[f'{now.date()} {classTime.start_time}', f'{now.date()} {classTime.end_time}']))
+                    if alreadyTaken.count() > 1:
+                        bulkAttendance.delete()
+                        messages.warning(request, 'Attendance for the current classes is already taken, please come again after the classes end!')
+                        return redirect('student_attendance')
 
                     if Student.objects.all().count() > 1:
                         counter = 0
                         for classroom in ClassRoom.objects.all()[:2]:
                             counter += 1
-                            # print('Counter: ', counter)
+                            print('Counter: ', counter)
                             # print('Weekday',  now.weekday())
                             timeTable = Timetable.objects.filter(room=classroom, time=classTime, day=now.weekday())
                             # print('timeTable.count(): ', timeTable.count())
                             # print('Room: ', classroom.room_no)
                             if timeTable.count() > 1:
-                                messages.error(request, 'Timetable is incorrect')
+                                bulkAttendance.delete()
+                                messages.error(request, f'Timetable is incorrect, multiple classes at this time in Room{classroom.room_no}')
                                 return render(request, 'progoffice/student_attendance.html', {'form': BulkAttendanceForm()})
                             elif timeTable.count() != 1:
                                 messages.error(request, f'No class at this time in Room{classroom.room_no}')
                                 continue
-                                # return render(request, 'progoffice/student_attendance.html', {'form': BulkAttendanceForm()})
                             course = timeTable[0].course
                             # print('Course: ', course)
                             if course is None:
                                 messages.error(request, f'No course is registered at this time in Room{classroom.room_no}')
                                 continue
-                                # return render(request, 'progoffice/student_attendance.html', {'form': BulkAttendanceForm()})
                             
                             students_enrolled = course.student_set.all()
                             # print('Students Enrolled: ', students_enrolled)
@@ -1017,7 +1021,7 @@ def studentAttendance(request):
                             # print(filename)
                             try:
                                 img = cv2.imread(f'{path}/{filename}')
-                                img = cv2.resize(img, None, fx=0.25, fy=0.25)
+                                # img = cv2.resize(img, None, fx=0.25, fy=0.25)
                                 img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
                                 faces = face_recognition.face_locations(img)
                             except:
@@ -1027,8 +1031,11 @@ def studentAttendance(request):
                             
                             if len(faces) < 1:
                                 bulkAttendance.delete()
-                                messages.error(request, f'No Faces Detected in Classroom{classroom.room_no}!')
-                                return render(request, 'progoffice/teacher_face_attendance.html', {'form': form})
+                                messages.warning(request, f'No Faces Detected in Classroom{classroom.room_no}!')
+                                for student in students_enrolled:
+                                    if StudentAttendance.objects.filter(student=student, time__year=now.year, time__month=now.month, time__day=now.day, course=course, class_timing=classTime).count() != 1:
+                                        attendance = StudentAttendance(student=student, class_timing=classTime, time=now, course=course, status='A')
+                                        attendance.save()
                             else:
                                 encodings_test = face_recognition.face_encodings(img, faces)
 
@@ -1046,50 +1053,66 @@ def studentAttendance(request):
                                     # print('Encodings Stored*********         : ', encodings)
                                     encodings_known.append(encodings)
                                     # print(encodings_known)
-
+                                
+                                presentCount = 0
                                 for encoding in encodings_test:
                                     matches = face_recognition.compare_faces(encodings_known, encoding, 0.5)
                                     faceDis = face_recognition.face_distance(encodings_known, encoding)
                                     
-                                    # print('Face Distance: ', faceDis)
+                                    print('Face Distance: ', faceDis)
                                     matchIndex = np.argmin(faceDis)
 
                                     if matches[matchIndex]:
+                                        presentCount += 1
                                         # print('Matched: ', pks[matchIndex])
 
 
                                         student = pks[matchIndex]
                                         print('Student Name: ' + student.student_name)
                                         
-                                        try:
-                                            alreadyMarked = StudentAttendance.objects.get(student=student, time=now, course=course)
-                                            print(alreadyMarked)
-                                        except:
-                                            # print('already Marked is False')
-                                            alreadyMarked = None
-                                        if alreadyMarked is not None:
-                                            messages.warning(request, f'{student}s attendance already marked in {course}')
-                                            
-                                        else:
-                                            attendance = StudentAttendance(student=student, time=now, course=course, status='P')
-                                            attendance.save()
+                                        alreadyMarked = StudentAttendance.objects.filter(student=student, class_timing=classTime, time__year=now.year, time__month=now.month, time__day=now.day, course=course)
+                                        if alreadyMarked.count() == 1:
+                                            marked = alreadyMarked[0]
+                                            marked.status = 'P'
+                                            print('Before Time: ', marked.time)
+                                            marked.time = now
+                                            marked.save()
+                                            print('After Time: ', marked.time)
+                                            continue
+                                        elif alreadyMarked.count() > 1:
+                                            for attendance in alreadyMarked:
+                                                attendance.delete()
+
+                                        attendance = StudentAttendance(student=student, class_timing=classTime, time=now, course=course, status='P')
+                                        attendance.save()
 
                                 for student in students_enrolled:
-                                    if StudentAttendance.objects.filter(student=student, time__year=now.year, time__month=now.month, time__day=now.day, course=course).count() != 1:
-                                        attendance = StudentAttendance(student=student, time=now, course=course, status='A')
+                                    alreadyMarked = StudentAttendance.objects.filter(student=student, class_timing=classTime, time__year=now.year, time__month=now.month, time__day=now.day, course=course)
+                                    if alreadyMarked.count() < 1:
+                                        attendance = StudentAttendance(student=student, time=now, class_timing=classTime, course=course, status='A')
                                         attendance.save()
-                        
-                        if StudentAttendance.objects.filter(time__year=now.year, time__month=now.month, time__day=now.day).count() > 1:
-                            messages.success(request, 'Attendance marked Successfully')
-                            return render(request, 'progoffice/student_attendance.html', {'form': BulkAttendanceForm()})
+                                    elif alreadyMarked.count() == 1:
+                                        marked = alreadyMarked[0]
+                                        if marked.status == 'A':
+                                            print('Before Time: ', marked.time)
+                                            marked.time = now
+                                            marked.save()
+                                            print('After Time: ', marked.time)
+                            
+                                if presentCount > 0:
+                                    absentCount = students_enrolled.count() - presentCount
+                                    messages.success(request, f'Attendance Marked Successfully in Room{classroom.room_no} | {presentCount} Present, {absentCount} Absent')
+                                else:
+                                    messages.warning(request, f'No faces matched in Room{classroom.room_no}')
 
                         return render(request, 'progoffice/student_attendance.html', {'form': BulkAttendanceForm()})
                               
 
                     else:
+                        bulkAttendance.delete()
                         messages.warning(request, 'No students registered')
                         return render(request, 'progoffice/student_attendance.html', {'form': form})
-
+                
                 else:
                     return render(request, 'progoffice/student_attendance.html', {'form': form})
             else:
@@ -1454,34 +1477,55 @@ def courseReport(request):
                 form = SearchCourseForm(request.POST)
                 if form.is_valid():
                     course = form.cleaned_data['course']
-                    classTimes = StudentAttendance.objects.filter(course=course).datetimes('time', kind='second', order='ASC')
+                    
+                    classDates = StudentAttendance.objects.filter(course=course).dates('time', kind='day', order='ASC')
+            
+                    classTimings = []
+                    totalClasses = 0
+                    for date in classDates:
+                        pkTimings = StudentAttendance.objects.filter(course=course, time__year=date.year, time__month=date.month, time__day=date.day).values('class_timing').distinct()
+                        classTimesDay = []
+                        for pk in pkTimings:
+                            classTimesDay.append(ClassTiming.objects.get(pk=pk['class_timing']))
+                        classTimings.append(classTimesDay)
+                        totalClasses += len(classTimesDay)
+
                     attendanceSheet = []
                     attendancePercentage = []
                     studentsEnrolled = course.student_set.all().order_by('reg_no')
-                    if classTimes.count() > 1:
+                    if classDates.count() > 0:
                         for student in studentsEnrolled:
                             presentCount = 0
                             studentAttendance = []
-                            for time in classTimes:
-                                try:
-                                    data = StudentAttendance.objects.get(student=student, time=time, course=course)
-                                except:
-                                    data = None
-                                
-                                if data is not None:
-                                    studentAttendance.append('P')
-                                    presentCount += 1
-                                else:
-                                    studentAttendance.append('A')
-                            attendancePercentage.append(round(presentCount/classTimes.count()*100, 2))
-                            print('Percentage: ', attendancePercentage)
+                            counter = 0
+                            for date in classDates:
+                                for timing in classTimings[counter]:
+                                    try:
+                                        data = StudentAttendance.objects.get(student=student, class_timing=timing, course=course)
+                                    except:
+                                        data = None
+                                    print('Data: ', data)
+                                    if data is not None:
+                                        studentAttendance.append('P')
+                                        presentCount += 1
+                                    else:
+                                        studentAttendance.append('A')
+                                counter += 1
+                            attendancePercentage.append(round(presentCount/totalClasses*100, 2))
                             attendanceSheet.append(studentAttendance)
                     
+                    counter = 0
+                    classes = []
+                    for date in classDates:
+                        for timing in classTimings[counter]:
+                            classes.append(f'{date} {timing}')
+                        counter += 1
+
                     if len(attendanceSheet) > 0:
                         data_csv = DataCSV()
                         data = {
                             'course': course,
-                            'class_times': classTimes,
+                            'class_times': classes,
                             'attendance_sheet': zip(attendanceSheet, studentsEnrolled, attendancePercentage)
                         }
                         np_bytes = pickle.dumps(data)
@@ -1491,7 +1535,7 @@ def courseReport(request):
                         context = {
                             'form': form,
                             'course': course,
-                            'class_times': classTimes,
+                            'class_times': classes,
                             'attendance_sheet': zip(attendanceSheet, studentsEnrolled, attendancePercentage),
                             'data_obj_pk': data_csv.pk,
                         }
