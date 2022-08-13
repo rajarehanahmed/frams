@@ -1,43 +1,63 @@
 import base64
 import csv
 from datetime import datetime
+import datetime as dt
 import pickle
 from django.http import Http404, HttpResponse
 from django.shortcuts import render, redirect
-from .forms import SearchCourseForm, SearchStudentForm
+from .forms import SearchStudentForm
 from progoffice.models import Attendance, ClassTiming, Course, DataCSV, Student, StudentAttendance, Teacher
 from django.contrib import messages
-from django.db.models import Count, Q
-
-# Create your views here.
+from django.db.models import Q
+import calendar
 
 
 def home(request):
     if request.user.is_authenticated and not request.user.is_superuser:
-        try:
-            teacher = Teacher.objects.get(user=request.user)
-            courses = Course.objects.filter(teacher=teacher)
-        except:
-            teacher = None
-        return render(request, 'teacher/index.html', {'teacher': teacher, 'courses': courses})
+        # try:
+        now = datetime.now()
+        teacher = Teacher.objects.get(user=request.user)
+        courses = Course.objects.filter(teacher=teacher)
+        lastDay = calendar.monthrange(now.year, now.month)[1]
+        startDate = dt.date(now.year, now.month, 1)
+        firstDay = startDate.weekday()
+        endDate = dt.date(now.year, now.month, lastDay)
+        delta = dt.timedelta(days=1)
+        monthAttendance = []
+        while startDate <= endDate:
+            day = startDate.weekday()
+            if day > 4:
+                monthAttendance.append('N')
+            else:
+                if startDate > now.date():
+                    monthAttendance.append('N')
+                else:
+                    attendance = Attendance.objects.filter(checkin_time__year=now.year, checkin_time__month=now.month, checkin_time__day=startDate.day, teacher=teacher)
+                    if attendance.count() > 1:
+                        messages.warning(request, f'Attendance is not correct. Multiple attendance instances found on {startDate}')
+                        monthAttendance = []
+                        break
+                    elif attendance.count() == 1:
+                        monthAttendance.append('P')
+                    else:
+                        monthAttendance.append('A')
+            startDate += delta
+        print(monthAttendance)
+        # except:
+        #     teacher = None
+        context = {
+            'teacher': teacher,
+            'courses': courses,
+            'month': now.strftime("%B"),
+            'year': now.year,
+            'first_day': firstDay,
+            'month_attendance': monthAttendance,
+        }
+        return render(request, 'teacher/index.html', context)
     elif request.user.is_authenticated and request.user.is_superuser:
         return redirect('index')
     else:
         return redirect('signin')
-
-
-# def profile(request):
-#     if request.user.is_authenticated:
-#         teacher = Teacher.objects.get(user_id=request.user)
-#         context = {
-#             'teacher_name':  teacher.teacher_name,
-#             'teacher_designation': teacher.teacher_designation,
-#             'teacher_status': teacher.teacher_status,
-#             'created_at': teacher.created_at
-#         }
-#         return render(request, 'teacher/profile.html', context)
-#     else:
-#         return redirect('index')
 
 
 def teacherReport(request):
@@ -70,10 +90,10 @@ def teacherReport(request):
                     return render(request, 'teacher/teacher_report.html', context)
                 
                 elif start_date == end_date:
-                    res = Attendance.objects.filter(teacher=teacher).filter(Q(checkin_time__year=start_date.year) and Q(checkin_time__month=start_date.month) and Q(checkin_time__day=start_date.day))
+                    res = Attendance.objects.filter(teacher=teacher).filter(Q(checkin_time__year=start_date.year) and Q(checkin_time__month=start_date.month) and Q(checkin_time__day=start_date.day)).order_by('-checkin_time')
                 else:
                     try:
-                        res = Attendance.objects.filter(teacher=teacher).filter(Q(checkin_time__range=[date_from, f'{date_to} 23:59:59']))
+                        res = Attendance.objects.filter(teacher=teacher).filter(Q(checkin_time__range=[date_from, f'{date_to} 23:59:59'])).order_by('-checkin_time')
                     except:
                         res = None
 
@@ -93,19 +113,19 @@ def teacherReport(request):
                     return render(request, 'teacher/teacher_report.html', context)
                 elif start_date == today_obj:
                     try:
-                        res = Attendance.objects.filter(teacher=teacher).filter(Q(checkin_time__year=start_date.year) and Q(checkin_time__month=start_date.month) and Q(checkin_time__day=start_date.day))
+                        res = Attendance.objects.filter(teacher=teacher).filter(Q(checkin_time__year=start_date.year) and Q(checkin_time__month=start_date.month) and Q(checkin_time__day=start_date.day)).order_by('-checkin_time')
                     except:
                         res = None
                 else:
                     try:
-                        res = Attendance.objects.filter(teacher=teacher).filter(Q(checkin_time__range=[date_from, f'{today} 23:59:59']))
+                        res = Attendance.objects.filter(teacher=teacher).filter(Q(checkin_time__range=[date_from, f'{today} 23:59:59'])).order_by('-checkin_time')
                     except:
                         res = None
 
             elif not date_from and not date_to:
                 try:
                     teacher=Teacher.objects.get(user=request.user)
-                    res = Attendance.objects.filter(teacher=teacher)
+                    res = Attendance.objects.filter(teacher=teacher).order_by('-checkin_time')
                 except:
                     res = None
             
@@ -208,10 +228,10 @@ def studentReport(request):
                         return render(request, 'teacher/student_report.html', context)
                     
                     elif start_date == end_date:
-                        res = StudentAttendance.objects.filter(student=student, course=course).filter(Q(time__year=start_date.year) and Q(time__month=start_date.month) and Q(time__day=start_date.day))
+                        res = StudentAttendance.objects.filter(student=student, course=course).filter(Q(time__year=start_date.year) and Q(time__month=start_date.month) and Q(time__day=start_date.day)).order_by('-time')
                     else:
                         try:
-                            res = StudentAttendance.objects.filter(student=student, course=course).filter(Q(time__range=[date_from, f'{date_to} 23:59:59']))
+                            res = StudentAttendance.objects.filter(student=student, course=course).filter(Q(time__range=[date_from, f'{date_to} 23:59:59'])).order_by('-time')
                         except:
                             res = None
                 
@@ -236,10 +256,10 @@ def studentReport(request):
                         return render(request, 'teacher/student_report.html', context)
                     
                     elif start_date == end_date:
-                        res = StudentAttendance.objects.filter(course__in=courses, student=student).filter(Q(time__year=start_date.year) and Q(time__month=start_date.month) and Q(time__day=start_date.day))
+                        res = StudentAttendance.objects.filter(course__in=courses, student=student).filter(Q(time__year=start_date.year) and Q(time__month=start_date.month) and Q(time__day=start_date.day)).order_by('course', '-time')
                     else:
                         try:
-                            res = StudentAttendance.objects.filter(course__in=courses, student=student).filter(Q(time__range=[date_from, f'{date_to} 23:59:59']))
+                            res = StudentAttendance.objects.filter(course__in=courses, student=student).filter(Q(time__range=[date_from, f'{date_to} 23:59:59'])).order_by('course', '-time')
                         except:
                             res = None
 
@@ -263,12 +283,12 @@ def studentReport(request):
                     
                     elif start_date == end_date:
                         try:
-                            res = StudentAttendance.objects.filter(course__in=courses).filter(Q(time__year=start_date.year) and Q(time__month=start_date.month) and Q(time__day=start_date.day))
+                            res = StudentAttendance.objects.filter(course__in=courses).filter(Q(time__year=start_date.year) and Q(time__month=start_date.month) and Q(time__day=start_date.day)).order_by('student', 'course', '-time')
                         except:
                             res = None
                     else:
                         try:
-                            res = StudentAttendance.objects.filter(course__in=courses).filter(Q(time__range=[date_from, f'{date_to} 23:59:59']))
+                            res = StudentAttendance.objects.filter(course__in=courses).filter(Q(time__range=[date_from, f'{date_to} 23:59:59'])).order_by('student', 'course', '-time')
                         except:
                             res = None
                 
@@ -290,12 +310,12 @@ def studentReport(request):
                         return render(request, 'teacher/student_report.html', context)
                     elif start_date == today_obj:
                         try:
-                            res = StudentAttendance.objects.filter(course__in=courses).filter(Q(time__year=start_date.year) and Q(time__month=start_date.month) and Q(time__day=start_date.day))
+                            res = StudentAttendance.objects.filter(course__in=courses).filter(Q(time__year=start_date.year) and Q(time__month=start_date.month) and Q(time__day=start_date.day)).order_by('student', 'course', '-time')
                         except:
                             res = None
                     else:
                         try:
-                            res = StudentAttendance.objects.filter(course__in=courses).filter(Q(time__range=[date_from, f'{today} 23:59:59']))
+                            res = StudentAttendance.objects.filter(course__in=courses).filter(Q(time__range=[date_from, f'{today} 23:59:59'])).order_by('student', 'course', '-time')
                         except:
                             res = None
 
@@ -319,12 +339,12 @@ def studentReport(request):
                     
                     elif start_date == today_obj:
                         try:
-                            res = StudentAttendance.objects.filter(course__in=courses, student=student).filter(Q(time__year=start_date.year) and Q(time__month=start_date.month) and Q(time__day=start_date.day))
+                            res = StudentAttendance.objects.filter(course__in=courses, student=student).filter(Q(time__year=start_date.year) and Q(time__month=start_date.month) and Q(time__day=start_date.day)).order_by('course', '-time')
                         except:
                             res = None
                     else:
                         try:
-                            res = StudentAttendance.objects.filter(course__in=courses, student=student).filter(Q(time__range=[date_from, f'{today} 23:59:59']))
+                            res = StudentAttendance.objects.filter(course__in=courses, student=student).filter(Q(time__range=[date_from, f'{today} 23:59:59'])).order_by('course', '-time')
                         except:
                             res = None
 
@@ -333,13 +353,13 @@ def studentReport(request):
                         student=Student.objects.get(reg_no=reg_no)
                         teacher = Teacher.objects.get(user=request.user)
                         courses = list(Course.objects.filter(teacher=teacher))
-                        res = StudentAttendance.objects.filter(course__in=courses, student=student)
+                        res = StudentAttendance.objects.filter(course__in=courses, student=student).order_by('course', '-time')
                     except:
                         res = None
                 
                 elif not reg_no and course and not date_from and not date_to:
                     try:
-                        res = StudentAttendance.objects.filter(course=course)
+                        res = StudentAttendance.objects.filter(course=course).order_by('student', 'course', '-time')
                     except:
                         res = None
                 
@@ -357,12 +377,12 @@ def studentReport(request):
                     
                     elif start_date == today_obj:
                         try:
-                            res = StudentAttendance.objects.filter(course=course).filter(Q(time__year=start_date.year) and Q(time__month=start_date.month) and Q(time__day=start_date.day))
+                            res = StudentAttendance.objects.filter(course=course).filter(Q(time__year=start_date.year) and Q(time__month=start_date.month) and Q(time__day=start_date.day)).order_by('student', '-time')
                         except:
                             res = None
                     else:
                         try:
-                            res = StudentAttendance.objects.filter(course=course).filter(Q(time__range=[date_from, f'{today} 23:59:59']))
+                            res = StudentAttendance.objects.filter(course=course).filter(Q(time__range=[date_from, f'{today} 23:59:59'])).order_by('student', 'course', '-time')
                         except:
                             res = None
                 
@@ -380,10 +400,10 @@ def studentReport(request):
                         return render(request, 'teacher/student_report.html', context)
                     
                     elif start_date == end_date:
-                        res = StudentAttendance.objects.filter(course=course).filter(Q(time__year=start_date.year) and Q(time__month=start_date.month) and Q(time__day=start_date.day))
+                        res = StudentAttendance.objects.filter(course=course).filter(Q(time__year=start_date.year) and Q(time__month=start_date.month) and Q(time__day=start_date.day)).order_by('student', '-time')
                     else:
                         try:
-                            res = StudentAttendance.objects.filter(course=course).filter(Q(time__range=[date_from, f'{date_to} 23:59:59']))
+                            res = StudentAttendance.objects.filter(course=course).filter(Q(time__range=[date_from, f'{date_to} 23:59:59'])).order_by('student', '-time')
                         except:
                             res = None
                 
@@ -405,25 +425,25 @@ def studentReport(request):
                     
                     elif start_date == today_obj:
                         try:
-                            res = StudentAttendance.objects.filter(student=student, course=course).filter(Q(time__year=start_date.year) and Q(time__month=start_date.month) and Q(time__day=start_date.day))
+                            res = StudentAttendance.objects.filter(student=student, course=course).filter(Q(time__year=start_date.year) and Q(time__month=start_date.month) and Q(time__day=start_date.day)).order_by('-time')
                         except:
                             res = None
                     else:
                         try:
-                            res = StudentAttendance.objects.filter(student=student, course=course).filter(Q(time__range=[date_from, f'{today} 23:59:59']))
+                            res = StudentAttendance.objects.filter(student=student, course=course).filter(Q(time__range=[date_from, f'{today} 23:59:59'])).order_by('-time')
                         except:
                             res = None
                 
                 elif reg_no and course and not date_from and not date_to:
                     try:
                         student=Student.objects.get(reg_no=reg_no)
-                        res = StudentAttendance.objects.filter(student=student, course=course)
+                        res = StudentAttendance.objects.filter(student=student, course=course).order_by('-time')
                     except:
                         res = None
                 
                 elif not reg_no and course and not date_from and not date_to:
                     try:
-                        res = StudentAttendance.objects.filter(course=course)
+                        res = StudentAttendance.objects.filter(course=course).order_by('course', '-time')
                     except:
                         res = None
                 
@@ -552,7 +572,7 @@ def courseReport(request):
             classes = []
             for date in classDates:
                 for timing in classTimings[counter]:
-                    classes.append(f'{date} {timing}')
+                    classes.append(f'{date} | {timing}')
                 counter += 1
 
             if len(attendanceSheet) > 0:

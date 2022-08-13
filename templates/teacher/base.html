@@ -39,7 +39,9 @@
                 <div id="navbar" class="collapse navbar-collapse">
                     <ul class="nav navbar-nav">
                         <li><a href="/">Home</a></li>
-                        <li><a href={% url 'teacher_report' %}>Teacher Report</a></li>
+                        {% if request.user.teacher.teacher_status == 'V' %}
+                            <li><a href={% url 'teacher_report' %}>Teacher Report</a></li>
+                        {% endif %}
                         <li><a href={% url 'student_report' %}>Student Report</a></li>
                         <!drop down About Us!>
                         <li class="dropdown">
@@ -94,6 +96,7 @@
 
                             <h1>{{ teacher.teacher_name }}</h1>
                             <p class="title">
+                                Designation: 
                                 {% if teacher.teacher_designation == 'P' %}
                                     Professor
                                 {% else %}
@@ -101,6 +104,7 @@
                                 {% endif %}
                             </p>
                             <p class="title">
+                                Status: 
                                 {% if teacher.teacher_status == 'V' %}
                                     Visiting
                                 {% else %}
@@ -139,7 +143,26 @@
         body {font-family: Verdana, sans-serif;}
 
         .card {
-            background-color: burlywood;
+            background-color: #91BAD6;
+        }
+
+        .date {
+            height: 35px;
+            width: 35px;
+            border-radius:50%;
+            display: inline-block;
+        }
+        .present {
+            background-color: green;
+            color: white;
+        }
+        .absent {
+            background-color: red;
+            color: white;
+        }
+        .header {
+            {% comment %} background-color: rgb (255, 87, 51); {% endcomment %}
+            font-size: 30px
         }
 
         .month {
