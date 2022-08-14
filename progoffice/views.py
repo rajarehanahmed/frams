@@ -25,11 +25,13 @@ import numpy as np
 import face_recognition
 from datetime import datetime
 from django.db.models import Count, Q
+import calendar
 
 
 def home(request):
     if request.user.is_authenticated:
         if request.user.is_superuser:
+            days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
             now = datetime.now()
             pendingRegs = PendingRegistration.objects.all()
             studentsCount = Student.objects.all().count()
@@ -37,9 +39,45 @@ def home(request):
             checkinCount = Attendance.objects.filter(checkin_time__year=now.year, checkin_time__month=now.month, checkin_time__day=now.day).count()
             checkoutCount = Attendance.objects.filter(checkout_time__year=now.year, checkout_time__month=now.month, checkout_time__day=now.day).count()
             classesCount = Timetable.objects.filter(day=now.weekday()).count()
-            print('Total Teachers: ', teachersCount)
-            print('Total Students: ', studentsCount)
-            print('Class Today: ', classesCount)
+            
+            curTime = now.time().replace(microsecond=0)
+
+            classTime = None
+            for timing in ClassTiming.objects.all():
+                if timing.start_time <= curTime <= timing.end_time:
+                    classTime = timing
+            currentClassTime = None
+            isTaken = None
+            if classTime:
+                currentClasses = Timetable.objects.filter(time=classTime, day=now.weekday())
+                if currentClasses.count() > 0:
+                    currentClassTime = classTime
+                    isTaken = BulkAttendance.objects.filter(Q(time__range=[f'{now.date()} {classTime.start_time}', f'{now.date()} {classTime.end_time}']))
+                    if isTaken.count() > 0:
+                        isTaken = 'Taken'
+                    else:
+                        isTaken = 'Not taken'
+
+            classTime = ClassTiming.objects.filter(start_time__gt=curTime).order_by('start_time')
+            nextClassTime = None
+            if classTime.count() > 0:
+                nextClasses = Timetable.objects.filter(time=classTime[0], day=now.weekday())
+                if nextClasses.count() > 1:
+                    nextClassTime = f'at {nextClasses[0].start_time.time()}'
+
+            if not nextClassTime:     
+                if now.weekday() >= 4:
+                    nextClasses = Timetable.objects.filter(day__gte=0).order_by('day')
+                    if nextClasses.count() > 1:
+                        nextClassTime = f'on {days[int(nextClasses[0].day)]}'
+                else:
+                    nextClasses = Timetable.objects.filter(day__gt=now.weekday()).order_by('day')
+                    if nextClasses.count() > 1:
+                        nextClassTime = f'on {days[int(nextClasses[0].day)]}'
+            
+            print('Current: ', currentClassTime, isTaken)
+            print('Next: ', nextClassTime)
+
             context = {
                 'pendingRegs': pendingRegs,
                 'students_count': studentsCount,
@@ -47,6 +85,9 @@ def home(request):
                 'classes_count': classesCount,
                 'checkin_count': checkinCount,
                 'checkout_count': checkoutCount,
+                'current_class_time': currentClassTime,
+                'is_taken': isTaken,
+                'next_class_time': nextClassTime,
             }
             return render(request, 'progoffice/index.html', context)
         else:
@@ -298,130 +339,130 @@ def completeSignup(request):
                     if form.is_valid():
                         form.save()
 
-                        if teacher.teacher_status == 'V':
-                            print("VVVVVVVVVVVVVVVVVV")
-                            # Detecting face in the image and storing encodings in the database
-                            path = 'media/teachers/faces'
-                            fileName = form.cleaned_data['face_img']
-                            img = cv2.imread(f'{path}/{fileName}')
-                            try:
-                                # img = cv2.resize(img, (0, 0), None, 0.25, 0.25)
-                                img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-                                faces = face_recognition.face_locations(img)
-                                print('Faces: ', len(faces))
-                            except:
-                                os.remove(teacher.face_img.path)
-                                os.remove(teacher.right_thumb_img.path)
-                                os.remove(teacher.right_index_img.path)
-                                os.remove(teacher.right_middle_img.path)
-                                os.remove(teacher.right_ring_img.path)
-                                os.remove(teacher.right_little_img.path)
-                                teacher.face_img.delete()
-                                teacher.right_thumb_img.delete()
-                                teacher.right_index_img.delete()
-                                teacher.right_middle_img.delete()
-                                teacher.right_ring_img.delete()
-                                teacher.right_little_img.delete()
-                                messages.error(request, "Error processing the image, please upload a clear Face Picture!")
-                                context = {
-                                    'user': user,
-                                    'form': form
-                                }
-                                return render(request, 'authentication/complete_signup.html', context)
-                            if len(faces) < 1:
-                                os.remove(teacher.face_img.path)
-                                teacher.face_img.delete()
-                                os.remove(teacher.right_thumb_img.path)
-                                os.remove(teacher.right_index_img.path)
-                                os.remove(teacher.right_middle_img.path)
-                                os.remove(teacher.right_ring_img.path)
-                                os.remove(teacher.right_little_img.path)
-                                teacher.face_img.delete()
-                                teacher.right_thumb_img.delete()
-                                teacher.right_index_img.delete()
-                                teacher.right_middle_img.delete()
-                                teacher.right_ring_img.delete()
-                                teacher.right_little_img.delete()
-                                messages.error(request, "No face detected, please upload a clear Face Picture")
-                                context = {
-                                    'user': user,
-                                    'form': form
-                                }
-                                return render(request, 'authentication/complete_signup.html', context)
-                            elif len(faces) > 1:
-                                os.remove(teacher.face_img.path)
-                                os.remove(teacher.right_thumb_img.path)
-                                os.remove(teacher.right_index_img.path)
-                                os.remove(teacher.right_middle_img.path)
-                                os.remove(teacher.right_ring_img.path)
-                                os.remove(teacher.right_little_img.path)
-                                teacher.face_img.delete()
-                                teacher.right_thumb_img.delete()
-                                teacher.right_index_img.delete()
-                                teacher.right_middle_img.delete()
-                                teacher.right_ring_img.delete()
-                                teacher.right_little_img.delete()
-                                messages.error(request, "Multiple faces detected, please upload a picture containing only the User's Face")
-                                context = {
-                                    'user': user,
-                                    'form': form
-                                }
-                                return render(request, 'authentication/complete_signup.html', context)
-                            else:
-                                encodings = face_recognition.face_encodings(img, faces)[0]
-                                # print('Encodings Stored*********         : ', encodings)
-                                np_bytes = pickle.dumps(encodings)
-                                np_base64 = base64.b64encode(np_bytes)
-                                teacher.face_encodings = np_base64
+                        # if teacher.teacher_status == 'V':
+                        #     print("VVVVVVVVVVVVVVVVVV")
+                        #     # Detecting face in the image and storing encodings in the database
+                        #     path = 'media/teachers/faces'
+                        #     fileName = form.cleaned_data['face_img']
+                        #     img = cv2.imread(f'{path}/{fileName}')
+                        #     try:
+                        #         # img = cv2.resize(img, (0, 0), None, 0.25, 0.25)
+                        #         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+                        #         faces = face_recognition.face_locations(img)
+                        #         print('Faces: ', len(faces))
+                        #     except:
+                        #         os.remove(teacher.face_img.path)
+                        #         os.remove(teacher.right_thumb_img.path)
+                        #         os.remove(teacher.right_index_img.path)
+                        #         os.remove(teacher.right_middle_img.path)
+                        #         os.remove(teacher.right_ring_img.path)
+                        #         os.remove(teacher.right_little_img.path)
+                        #         teacher.face_img.delete()
+                        #         teacher.right_thumb_img.delete()
+                        #         teacher.right_index_img.delete()
+                        #         teacher.right_middle_img.delete()
+                        #         teacher.right_ring_img.delete()
+                        #         teacher.right_little_img.delete()
+                        #         messages.error(request, "Error processing the image, please upload a clear Face Picture!")
+                        #         context = {
+                        #             'user': user,
+                        #             'form': form
+                        #         }
+                        #         return render(request, 'authentication/complete_signup.html', context)
+                        #     if len(faces) < 1:
+                        #         os.remove(teacher.face_img.path)
+                        #         teacher.face_img.delete()
+                        #         os.remove(teacher.right_thumb_img.path)
+                        #         os.remove(teacher.right_index_img.path)
+                        #         os.remove(teacher.right_middle_img.path)
+                        #         os.remove(teacher.right_ring_img.path)
+                        #         os.remove(teacher.right_little_img.path)
+                        #         teacher.face_img.delete()
+                        #         teacher.right_thumb_img.delete()
+                        #         teacher.right_index_img.delete()
+                        #         teacher.right_middle_img.delete()
+                        #         teacher.right_ring_img.delete()
+                        #         teacher.right_little_img.delete()
+                        #         messages.error(request, "No face detected, please upload a clear Face Picture")
+                        #         context = {
+                        #             'user': user,
+                        #             'form': form
+                        #         }
+                        #         return render(request, 'authentication/complete_signup.html', context)
+                        #     elif len(faces) > 1:
+                        #         os.remove(teacher.face_img.path)
+                        #         os.remove(teacher.right_thumb_img.path)
+                        #         os.remove(teacher.right_index_img.path)
+                        #         os.remove(teacher.right_middle_img.path)
+                        #         os.remove(teacher.right_ring_img.path)
+                        #         os.remove(teacher.right_little_img.path)
+                        #         teacher.face_img.delete()
+                        #         teacher.right_thumb_img.delete()
+                        #         teacher.right_index_img.delete()
+                        #         teacher.right_middle_img.delete()
+                        #         teacher.right_ring_img.delete()
+                        #         teacher.right_little_img.delete()
+                        #         messages.error(request, "Multiple faces detected, please upload a picture containing only the User's Face")
+                        #         context = {
+                        #             'user': user,
+                        #             'form': form
+                        #         }
+                        #         return render(request, 'authentication/complete_signup.html', context)
+                        #     else:
+                        #         encodings = face_recognition.face_encodings(img, faces)[0]
+                        #         # print('Encodings Stored*********         : ', encodings)
+                        #         np_bytes = pickle.dumps(encodings)
+                        #         np_base64 = base64.b64encode(np_bytes)
+                        #         teacher.face_encodings = np_base64
                             
-                                # Extracting keypoints and descriptors from fingerprint samples and saving in the database
-                                sift = cv2.SIFT_create()
-                                path = 'media/teachers/fingerprints'
-                                filename_thumb = form.cleaned_data.get('right_thumb_img')
-                                filename_index = form.cleaned_data.get('right_index_img')
-                                filename_middle = form.cleaned_data.get('right_middle_img')
-                                filename_ring = form.cleaned_data.get('right_ring_img')
-                                filename_little = form.cleaned_data.get('right_little_img')
+                        #         # Extracting keypoints and descriptors from fingerprint samples and saving in the database
+                        #         sift = cv2.SIFT_create()
+                        #         path = 'media/teachers/fingerprints'
+                        #         filename_thumb = form.cleaned_data.get('right_thumb_img')
+                        #         filename_index = form.cleaned_data.get('right_index_img')
+                        #         filename_middle = form.cleaned_data.get('right_middle_img')
+                        #         filename_ring = form.cleaned_data.get('right_ring_img')
+                        #         filename_little = form.cleaned_data.get('right_little_img')
 
-                                fingerprints = []
-                                fingerprints.append(cv2.imread(f'{path}/{filename_thumb}'))
-                                fingerprints.append(cv2.imread(f'{path}/{filename_index}'))
-                                fingerprints.append(cv2.imread(f'{path}/{filename_middle}'))
-                                fingerprints.append(cv2.imread(f'{path}/{filename_ring}'))
-                                fingerprints.append(cv2.imread(f'{path}/{filename_little}'))
+                        #         fingerprints = []
+                        #         fingerprints.append(cv2.imread(f'{path}/{filename_thumb}'))
+                        #         fingerprints.append(cv2.imread(f'{path}/{filename_index}'))
+                        #         fingerprints.append(cv2.imread(f'{path}/{filename_middle}'))
+                        #         fingerprints.append(cv2.imread(f'{path}/{filename_ring}'))
+                        #         fingerprints.append(cv2.imread(f'{path}/{filename_little}'))
 
-                                encoded_keypoints = []
-                                encoded_descriptors = []
-                                for fingerprint in fingerprints:
-                                    keypoints, descriptors = sift.detectAndCompute(fingerprint, None)
+                        #         encoded_keypoints = []
+                        #         encoded_descriptors = []
+                        #         for fingerprint in fingerprints:
+                        #             keypoints, descriptors = sift.detectAndCompute(fingerprint, None)
 
-                                    # print('Before*******************')
-                                    # print(keypoints, descriptors)
+                        #             # print('Before*******************')
+                        #             # print(keypoints, descriptors)
                                 
-                                    points_list = []
-                                    for point in keypoints:
-                                        temp = (point.pt, point.size, point.angle, point.response, point.octave, point.class_id)
-                                        points_list.append(temp)
+                        #             points_list = []
+                        #             for point in keypoints:
+                        #                 temp = (point.pt, point.size, point.angle, point.response, point.octave, point.class_id)
+                        #                 points_list.append(temp)
 
 
-                                    np_bytes = pickle.dumps(points_list)
-                                    encoded_keypoints.append(base64.b64encode(np_bytes))
+                        #             np_bytes = pickle.dumps(points_list)
+                        #             encoded_keypoints.append(base64.b64encode(np_bytes))
 
 
-                                    np_bytes = pickle.dumps(descriptors)
-                                    encoded_descriptors.append(base64.b64encode(np_bytes))
+                        #             np_bytes = pickle.dumps(descriptors)
+                        #             encoded_descriptors.append(base64.b64encode(np_bytes))
                                     
-                                teacher.right_thumb_keypoints = encoded_keypoints[0]
-                                teacher.right_index_keypoints = encoded_keypoints[1]
-                                teacher.right_middle_keypoints = encoded_keypoints[2]
-                                teacher.right_ring_keypoints = encoded_keypoints[3]
-                                teacher.right_little_keypoints = encoded_keypoints[4]
+                        #         teacher.right_thumb_keypoints = encoded_keypoints[0]
+                        #         teacher.right_index_keypoints = encoded_keypoints[1]
+                        #         teacher.right_middle_keypoints = encoded_keypoints[2]
+                        #         teacher.right_ring_keypoints = encoded_keypoints[3]
+                        #         teacher.right_little_keypoints = encoded_keypoints[4]
 
-                                teacher.right_thumb_descriptors = encoded_descriptors[0]
-                                teacher.right_index_descriptors = encoded_descriptors[1]
-                                teacher.right_middle_descriptors = encoded_descriptors[2]
-                                teacher.right_ring_descriptors = encoded_descriptors[3]
-                                teacher.right_little_descriptors = encoded_descriptors[4]
+                        #         teacher.right_thumb_descriptors = encoded_descriptors[0]
+                        #         teacher.right_index_descriptors = encoded_descriptors[1]
+                        #         teacher.right_middle_descriptors = encoded_descriptors[2]
+                        #         teacher.right_ring_descriptors = encoded_descriptors[3]
+                        #         teacher.right_little_descriptors = encoded_descriptors[4]
 
                         try:
                             pr = PendingRegistration.objects.get(teacher=teacher)
