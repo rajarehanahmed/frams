@@ -4,6 +4,8 @@ from django import forms
 from .models import Attendance, BulkAttendance, Course, SearchStudent, Student, Teacher, Timetable
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from validate_email_address import validate_email
+import cv2
 
 
 
@@ -32,8 +34,9 @@ class UserForm(UserCreationForm):
             self.add_error('username', 'Username is taken!')
         if User.objects.filter(email=cd.get('email')).exists():
             self.add_error('email', 'Email already exists!')
+        if not validate_email(str(cd.get('email'))):
+            self.add_error('email', 'Invalid email address!')
         return cd
-
 
 
 class TeacherForm(forms.ModelForm):
@@ -122,6 +125,15 @@ class StudentForm(forms.ModelForm):
         if not (regex.search(nameWithNoDigit) == None):
             self.add_error('father_name', 'Father Name contains special character(s)!')
         return cd
+
+
+# class StudentUptionForm(forms.ModelForm):
+#     def clean(self):
+#         cd = self.cleaned_data
+#         img = cd.get('face_img')
+#         cv2.imshow('IMG', img)
+#         cv2.waitKey(0)
+#         cv2.destroyAllWindows()
 
 
 class BulkAttendanceForm(forms.ModelForm):

@@ -7,7 +7,7 @@ DAY_OF_THE_WEEK = {
     '2' : _(u'Wednesday'),
     '3' : _(u'Thursday'),
     '4' : _(u'Friday'),
-    '5' : _(u'Saturday'),
+    '5' : _(u'Saturdar'),
     '6' : _(u'Sunday'),
 }
 

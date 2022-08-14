@@ -42,6 +42,7 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     'progoffice.apps.ProgofficeConfig',
     'teacher.apps.TeacherConfig',
+    'django_cleanup.apps.CleanupConfig',
     'admin_interface',
     'colorfield',
     'django.contrib.admin',

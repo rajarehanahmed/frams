@@ -9,11 +9,14 @@
                 {{ form.reg_no }}
                 <label for="name">Course</label>
                 {{ form.course }}
-                <label for="date_from">Date From</label>
-                <input type="date" id="date_from" name="date_from" {% if date_from %} value="{{ date_from }}" {% endif %}>
-                <label for="date_to">Date To</label>
-                <input type="date" id="date_to" name="date_to" {% if date_to %} value="{{ date_to }}" {% endif %}>
-                <button type="submit" class="btn btn-primary" style="margin-left: 50px; margin-top: 10px">Search</i></button>
+                <br>
+                <div style="margin-top: 10px">
+                    <label for="date_from">Date From</label>
+                    <input type="date" id="date_from" name="date_from" {% if date_from %} value="{{ date_from }}" {% endif %}>
+                    <label for="date_to">Date To</label>
+                    <input type="date" id="date_to" name="date_to" {% if date_to %} value="{{ date_to }}" {% endif %}>
+                    <button type="submit" class="btn btn-primary" style="margin-left: 50px;">Search</i></button>
+                </div>
             </form>
         </div>
         <br>
