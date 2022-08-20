@@ -59,13 +59,16 @@ def home(request):
                         isTaken = 'Not taken'
 
             classTime = ClassTiming.objects.filter(start_time__gt=curTime).order_by('start_time')
+            # print('Next Class: ', classTime)
             nextClassTime = None
             if classTime.count() > 0:
                 nextClasses = Timetable.objects.filter(time=classTime[0], day=now.weekday())
-                if nextClasses.count() > 1:
-                    nextClassTime = f'at {nextClasses[0].start_time.time()}'
+                print('Next ClassTime: ', nextClasses)
+                if nextClasses.count() > 0:
+                    nextClassTime = f'at {nextClasses[0].time.start_time}'
+                    print('nextClassTime: ', nextClassTime)
 
-            if not nextClassTime:     
+            if nextClassTime is None:
                 if now.weekday() >= 4:
                     nextClasses = Timetable.objects.filter(day__gte=0).order_by('day')
                     if nextClasses.count() > 1:
@@ -484,21 +487,21 @@ def completeSignup(request):
                             email = EmailMessage(email_subject, message2, settings.EMAIL_HOST_USER, [user.email])
                             email.send()
                         except:
-                            try:
-                                os.remove(teacher.face_img.path)
-                                os.remove(teacher.right_thumb_img.path)
-                                os.remove(teacher.right_index_img.path)
-                                os.remove(teacher.right_middle_img.path)
-                                os.remove(teacher.right_ring_img.path)
-                                os.remove(teacher.right_little_img.path)
-                                teacher.face_img.delete()
-                                teacher.right_thumb_img.delete()
-                                teacher.right_index_img.delete()
-                                teacher.right_middle_img.delete()
-                                teacher.right_ring_img.delete()
-                                teacher.right_little_img.delete()
-                            except:
-                                pass
+                            # try:
+                            #     os.remove(teacher.face_img.path)
+                            #     os.remove(teacher.right_thumb_img.path)
+                            #     os.remove(teacher.right_index_img.path)
+                            #     os.remove(teacher.right_middle_img.path)
+                            #     os.remove(teacher.right_ring_img.path)
+                            #     os.remove(teacher.right_little_img.path)
+                            #     teacher.face_img.delete()
+                            #     teacher.right_thumb_img.delete()
+                            #     teacher.right_index_img.delete()
+                            #     teacher.right_middle_img.delete()
+                            #     teacher.right_ring_img.delete()
+                            #     teacher.right_little_img.delete()
+                            # except:
+                            #     pass
                             pr = PendingRegistration(teacher=teacher)
                             pr.save()
                             messages.error(request, "Sending verification email failed!")
