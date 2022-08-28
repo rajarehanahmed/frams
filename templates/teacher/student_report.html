@@ -19,20 +19,20 @@
     </div>
 
     {% if search %}
-        <table class="table table-bordered">
-        <thead>
+        <table class="table table-bordered" style="font-size: 13px">
+        <thead bgcolor="#212529" style="color: white">
             <tr>
-            <th scope="col">Sr No</th>
-            <th scope="col">Reg No</th>
-            <th scope="col">Name</th>
-            <th scope="col">Course</th>
-            <th scope="col">Date</th>
-            <th scope="col">Attendance</th>
+            <td>Sr No</td>
+            <td scope="col">Name</td>
+            <td scope="col">Reg No</td>
+            <td scope="col">Course</td>
+            <td scope="col">Date</td>
+            <td scope="col">Attendance</td>
             </tr>
         </thead>
-        <tbody>
+        <tbody class="result_table">
             {% for obj in search %}
-                <tr>
+                <tr class="{{ obj.student.reg_no }}">
                     <th scope="row">{{ forloop.counter }}</th>                    
                     <td>{{ obj.student.reg_no }}</td>
                     <td>{{ obj.student.student_name }}</td>
@@ -49,6 +49,29 @@
     {% else %}
         <div class="col-md-4"></div>
         <img src="/media/images/no_data.jpg" alt="No data" width="400" height="400">
-    {% endif %}
-
+    {% endif %}        
 {% endblock body %}
+
+{% block script %}
+    $(function() {
+        var rows = document.querySelector(".result_table").querySelectorAll("tr");
+
+        // loops through each row
+        for (i = 0; i < rows.length; i++) {
+
+            if (i == 0)
+                rows[i].style.backgroundColor = "white";
+            else if (rows[i].getAttribute("class") == rows[i-1].getAttribute("class")) {
+                rows[i].style.backgroundColor = rows[i-1].style.backgroundColor;
+            }
+            else {
+                if (rows[i-1].style.backgroundColor == "white")
+
+                    rows[i].style.backgroundColor = "rgb(247,247,249)"
+                else
+                    rows[i].style.backgroundColor = "white"
+            }
+
+        }
+    });
+{% endblock script %}

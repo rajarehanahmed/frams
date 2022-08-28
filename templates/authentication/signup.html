@@ -8,7 +8,7 @@
     {% comment %} <link rel="stylesheet" href="css/main.css"> {% endcomment %}
   </head>
   <body>
-    {% for message in messages %}
+    {% comment %} {% for message in messages %}
       <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
         <strong>{{message}}!</strong>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -27,7 +27,7 @@
         <strong>{{error}}</strong>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
       </div>
-    {% endfor %}
+    {% endfor %} {% endcomment %}
     <form method="post" action="{% url 'signup' %}">
       {% csrf_token %}
 
@@ -35,27 +35,7 @@
     
       <legend><span class="number">1</span>Sign Up info</legend>
       {{ user_form.as_p }}
-      {% comment %} <label class="is-invalid">Username:</label>
-      <div class="invalid-feedback">
-        {{ user_form.username.errors }}
-      </div>
-      {{ user_form.username }} {% endcomment %}
-      
-      {% comment %} <label class="is-invalid">Email:</label>
-      <div class="invalid-feedback">
-        {{ user_form.email.errors }}
-      </div>
-      {{ user_form.email }}
-      
-      <label class="is-invalid" for="password">Password:</label>
-      <div class="invalid-feedback">
-        {{ user_form.password.errors }}
-      </div>
-      {{ user_form.password }}
-      
-      <label for="password">Repeat Password:</label>
-      <input type="password" id="repeat_password" name="pass1">                {% endcomment %}
-    
+     
       <legend><span class="number">2</span>Profile</legend>
 
       <label class="is-invalid" for="name">Name:</label>
@@ -80,11 +60,6 @@
         {{ teacher_form.teacher_designation.errors }}
       </div>
       {{ teacher_form.teacher_designation }}
-
-      {% comment %} <input type="radio" id="Professor" value="Professor" name="teacher_designation">
-      <label for="Professor" class="light">Professor</label><br>
-      <input type="radio" id="Asst Professor" value="Asst Professor"name="teacher_designation">
-      <label for="Asst Professor" class="light">Asst Professor</label> {% endcomment %}
       
       <button type="submit">Sign Up</button>
       

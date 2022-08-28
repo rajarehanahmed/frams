@@ -17,6 +17,8 @@ class StudentUpdationForm(forms.ModelForm):
 class StudentAdmin(admin.ModelAdmin):
     form = StudentUpdationForm
     search_fields=('reg_no', 'student_name')
+    list_display = ('reg_no', 'student_name', 'father_name')
+    # readonly_fields = ('reg_no',)
 
 admin.site.register(Student, StudentAdmin)
 admin.site.register(Teacher, TeacherAdminModel)

@@ -14,7 +14,6 @@ import calendar
 
 def home(request):
     if request.user.is_authenticated and not request.user.is_superuser:
-        # try:
         now = datetime.now()
         teacher = Teacher.objects.get(user=request.user)
         courses = Course.objects.filter(teacher=teacher)
@@ -24,12 +23,16 @@ def home(request):
         endDate = dt.date(now.year, now.month, lastDay)
         delta = dt.timedelta(days=1)
         monthAttendance = []
+        counter = 0
+        print('Date Joined: ', teacher.user.date_joined.date())
         while startDate <= endDate:
             day = startDate.weekday()
             if day > 4:
                 monthAttendance.append('N')
             else:
                 if startDate > now.date():
+                    monthAttendance.append('N')
+                elif startDate < teacher.user.date_joined.date():
                     monthAttendance.append('N')
                 else:
                     attendance = Attendance.objects.filter(checkin_time__year=now.year, checkin_time__month=now.month, checkin_time__day=startDate.day, teacher=teacher)
@@ -42,9 +45,8 @@ def home(request):
                     else:
                         monthAttendance.append('A')
             startDate += delta
-        print(monthAttendance)
-        # except:
-        #     teacher = None
+            counter += 1
+        # print(monthAttendance)
         context = {
             'teacher': teacher,
             'courses': courses,
@@ -139,8 +141,8 @@ def teacherReport(request):
                 np_base64 = base64.b64encode(np_bytes)
                 data_csv.data = np_base64
                 data_csv.save()
-                print('PRIMARY KEY: ***************************', data_csv.pk)
-                print('TYPE: ', type(data_csv.pk))
+                # print('PRIMARY KEY: ***************************', data_csv.pk)
+                # print('TYPE: ', type(data_csv.pk))
                 context = {
                     'search': res,
                     'date_from': date_from,
@@ -155,7 +157,24 @@ def teacherReport(request):
                 }
             return render(request, 'teacher/teacher_report.html', context)
         else:
-            return render(request, 'teacher/teacher_report.html')
+            try:
+                teacher=Teacher.objects.get(user=request.user)
+            except:
+                messages.error(request, 'Teacher object not found!')
+            res = Attendance.objects.filter(teacher=teacher).order_by('-checkin_time')
+            if res.count() > 1:
+                data_csv = DataCSV()
+                np_bytes = pickle.dumps(res)
+                np_base64 = base64.b64encode(np_bytes)
+                data_csv.data = np_base64
+                data_csv.save()
+                context = {
+                    'search': res,
+                    'data_obj_pk': data_csv.pk,
+                }
+            else:
+                context = {}
+            return render(request, 'teacher/teacher_report.html', context)
     else:
         return redirect('index')
 
@@ -443,8 +462,17 @@ def studentReport(request):
                 
                 elif not reg_no and course and not date_from and not date_to:
                     try:
-                        res = StudentAttendance.objects.filter(course=course).order_by('course', '-time')
+                        res = StudentAttendance.objects.filter(course=course).order_by('student', '-time')
                     except:
+                        res = None
+                
+                elif not reg_no and not course and not date_from and not date_to:
+                    try:
+                        teacher = Teacher.objects.get(user=request.user)
+                    except:
+                        messages.error(request, 'Teacher object not found!')
+                    res = StudentAttendance.objects.filter(course__in=teacher.course_set.all()).order_by('course', 'student', '-time')
+                    if res.count() < 1:
                         res = None
                 
                 elif not date_from and date_to:
@@ -481,10 +509,27 @@ def studentReport(request):
         else:
             try:
                 teacher = Teacher.objects.get(user=request.user)
-                print(teacher)
+                # print(teacher)
             except:
-                messages.error(request, 'Teacher object not found!!!')
-            return render(request, 'teacher/student_report.html', {'form': SearchStudentForm(request.POST or None, teacher)})
+                messages.error(request, 'Teacher object not found!')
+            res = StudentAttendance.objects.filter(course__in=teacher.course_set.all()).order_by('course', 'student', '-time')
+            if res.count() > 1:
+                data_csv = DataCSV()
+                np_bytes = pickle.dumps(res)
+                np_base64 = base64.b64encode(np_bytes)
+                data_csv.data = np_base64
+                data_csv.save()
+                context = {
+                    'form': SearchStudentForm(request.POST or None, teacher),
+                    'search': res,
+                    'data_obj_pk': data_csv.pk,
+                }
+            else:
+                context = {
+                    'form': SearchStudentForm(request.POST or None, teacher),
+                }
+
+            return render(request, 'teacher/student_report.html', context)
     else:
         redirect('index')
 

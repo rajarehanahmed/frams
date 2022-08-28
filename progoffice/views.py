@@ -17,7 +17,7 @@ from frams import settings
 from django.contrib.auth.models import User
 from django.contrib import messages
 
-from .models import Attendance, BulkAttendance, ClassTiming, DataCSV, PendingRegistration, ClassRoom, Student, StudentAttendance, Teacher, Timetable
+from .models import Attendance, BulkAttendance, ClassTiming, Course, DataCSV, PendingRegistration, ClassRoom, Student, StudentAttendance, Teacher, Timetable
 from .forms import SearchCourseForm, SearchStudentForm, StudentForm, TeacherAttendanceForm, TeacherForm, UserForm, BulkAttendanceForm
 
 import cv2
@@ -551,12 +551,12 @@ def teacherFaceAttendance(request):
                     form = TeacherAttendanceForm(request.POST, request.FILES)
                     if form.is_valid():
                         now = datetime.now()
-                        print('Year: ', now.year, ' Month: ', now.month, ' Day: ', now.day)
+                        # print('Year: ', now.year, ' Month: ', now.month, ' Day: ', now.day)
                         attendance = form.save()
 
                         path = 'media'
                         filename = attendance.checkin_img
-                        print(filename)
+                        # print(filename)
                         img = cv2.imread(f'{path}/{filename}')
 
                         try:
@@ -582,10 +582,10 @@ def teacherFaceAttendance(request):
                             encodeList = []
                             pks = []
                             
-                            counter = 0
+                            # counter = 0
                             for obj in Teacher.objects.filter(teacher_status='V', user__in=list(users)):
-                                counter += 1
-                                print(counter)
+                                # counter += 1
+                                # print(counter)
                                 try:
                                     np_bytes = base64.b64decode(obj.face_encodings)
                                 except:
@@ -593,28 +593,26 @@ def teacherFaceAttendance(request):
                                 pks.append(obj)
                                 # print('Email: ', obj.user.email)
                                 encodings = pickle.loads(np_bytes)
-                                print('Type of Encodings fetched: ', type(encodings))
-                                print('Encodings Stored*********         : ', encodings)
+                                # print('Encodings Stored*********         : ', encodings)
                                 encodeList.append(encodings)
-                                print(encodeList)
+                                # print(encodeList)
                                 # encodings_known = np.append(encodings_known, encodings)
 
 
                             matches = face_recognition.compare_faces(encodeList, encodings_test, 0.5)
                             faceDis = face_recognition.face_distance(encodeList, encodings_test)
                             
-                            print('Face Distance: ', faceDis)
                             matchIndex = np.argmin(faceDis)
 
                             if matches[matchIndex]:
-                                print('Matched: ', pks[matchIndex])
                                 teacher = pks[matchIndex]
                                 print('Teacher Name: ' + teacher.teacher_name)
+                                print('Face Distance: ', faceDis[matchIndex])
                                 now = datetime.now()
                                 try:
                                     alreadyCheckedIn = Attendance.objects.get(teacher=teacher, checkin_time__year=now.year, checkin_time__month=now.month, checkin_time__day=now.day)
                                 except:
-                                    print('already checkedin is False')
+                                    # print('already checkedin is False')
                                     alreadyCheckedIn = False
                                 if alreadyCheckedIn is not False:
                                     if alreadyCheckedIn.checkout_time is not None:
@@ -662,11 +660,11 @@ def teacherFingerprintAttendance(request):
                     form = TeacherAttendanceForm(request.POST, request.FILES)
                     if form.is_valid():
                         now = datetime.now()
-                        print('Year: ', now.year, ' Month: ', now.month, ' Day: ', now.day)
+                        # print('Year: ', now.year, ' Month: ', now.month, ' Day: ', now.day)
                         attendance = form.save()
                         path = 'media'
                         filename = attendance.checkin_img
-                        print(filename)
+                        # print(filename)
                         sift = cv2.SIFT_create()
                         try:
                             img = cv2.imread(f'{path}/{filename}')
@@ -747,7 +745,7 @@ def teacherFingerprintAttendance(request):
                                                                 'right_middle': {'keypoints': right_middle_kp, 'descriptors': right_middle_desc},
                                                                 'right_ring': {'keypoints': right_ring_kp, 'descriptors': right_ring_desc},
                                                                 'right_little': {'keypoints': right_little_kp, 'descriptors': right_little_desc}}})
-                        print(teacher_fingerprints)
+                        # print(teacher_fingerprints)
 
                         best_score = 0
                         finger_matched = None
@@ -791,7 +789,7 @@ def teacherFingerprintAttendance(request):
                             try:
                                 alreadyCheckedIn = Attendance.objects.get(teacher=teacher_matched, checkin_time__year=now.year, checkin_time__month=now.month, checkin_time__day=now.day)
                             except:
-                                print('already checkedin is False')
+                                # print('already checkedin is False')
                                 alreadyCheckedIn = False
                             if alreadyCheckedIn is not False:
                                 if alreadyCheckedIn.checkout_time is not None:
@@ -921,6 +919,11 @@ def teacherReport(request):
                     except:
                         res = None
                 
+                elif not email and not date_from and not date_to:
+                    res = Attendance.objects.all().order_by('teacher', '-checkin_time')
+                    if res.count() < 1:
+                        res = None
+                
                 elif not date_from and date_to:
                     messages.error(request, 'Invalid Date! Ensure date is not greater than today.  Please note that "Date to" must be greater than or equal to "Date From".')
 
@@ -930,8 +933,8 @@ def teacherReport(request):
                     np_base64 = base64.b64encode(np_bytes)
                     data_csv.data = np_base64
                     data_csv.save()
-                    print('PRIMARY KEY: ***************************', data_csv.pk)
-                    print('TYPE: ', type(data_csv.pk))
+                    # print('PRIMARY KEY: ***************************', data_csv.pk)
+                    # print('TYPE: ', type(data_csv.pk))
                     context = {
                         'search': res,
                         'email': email,
@@ -947,9 +950,21 @@ def teacherReport(request):
                         'date_to': date_to,
                     }
                 return render(request, 'progoffice/teacher_report.html', context)
-            
 
-            return render(request, 'progoffice/teacher_report.html')
+            res = Attendance.objects.all().order_by('teacher', '-checkin_time')
+            if res.count() > 1:
+                data_csv = DataCSV()
+                np_bytes = pickle.dumps(res)
+                np_base64 = base64.b64encode(np_bytes)
+                data_csv.data = np_base64
+                data_csv.save()
+                context = {
+                    'search': res,
+                    'data_obj_pk': data_csv.pk,
+                }
+            else:
+                context = {}
+            return render(request, 'progoffice/teacher_report.html', context)
         else:
             raise Http404()
     else:
@@ -1025,6 +1040,7 @@ def studentAttendance(request):
 
                     curTime = now.time().replace(microsecond=0)
                     # print('Current Time: ', curTime)
+
                     
                     classTime = None
                     for timing in ClassTiming.objects.all():
@@ -1033,6 +1049,7 @@ def studentAttendance(request):
                     # print('classTime: ', classTime)
                     # print('Weekday: ', now.weekday())
                     currentClasses = Timetable.objects.filter(time=classTime, day=now.weekday())
+                    print(currentClasses)
                     if classTime is None or now.weekday() > 6 or currentClasses.count() < 1:
                         bulkAttendance.delete()
                         messages.error(request, 'No class at this time')
@@ -1043,11 +1060,15 @@ def studentAttendance(request):
                         messages.warning(request, 'Attendance for the current classes is already taken, please come again after the classes end!')
                         return redirect('student_attendance')
 
+                    for crs in Course.objects.all():
+                        if Timetable.objects.filter(course=crs, time=classTime, day=now.weekday()).count() > 1:
+                            messages.error(request, f"Timetable is incorrect! {crs}'s class is scheduled in multiple classrooms.")
+                            return redirect('student_attendance')
+                    
                     if Student.objects.all().count() > 0:
                         counter = 0
                         for classroom in ClassRoom.objects.all()[:2]:
                             counter += 1
-                            print('Counter: ', counter)
                             # print('Weekday',  now.weekday())
                             timeTable = Timetable.objects.filter(room=classroom, time=classTime, day=now.weekday())
                             # print('timeTable.count(): ', timeTable.count())
@@ -1060,20 +1081,18 @@ def studentAttendance(request):
                                 messages.error(request, f'No class at this time in Room{classroom.room_no}')
                                 continue
                             course = timeTable[0].course
-                            # print('Course: ', course)
+                            print('Room: ', counter, ' ---> Course: ', course)
                             if course is None:
                                 messages.error(request, f'No course is registered at this time in Room{classroom.room_no}')
                                 continue
                             
                             students_enrolled = course.student_set.all()
-                            # print('Students Enrolled: ', students_enrolled)
                             
                             if students_enrolled.count() < 1:
                                 messages.warning(request, f'No students enrolled in {course}')
                                 continue
                             path = 'media'
                             filename = getattr(bulkAttendance, f'room{classroom.room_no}_img')
-                            # print(filename)
                             try:
                                 img = cv2.imread(f'{path}/{filename}')
                                 # img = cv2.resize(img, None, fx=0.25, fy=0.25)
@@ -1114,25 +1133,26 @@ def studentAttendance(request):
                                     matches = face_recognition.compare_faces(encodings_known, encoding, tolerance=0.5)
                                     faceDis = face_recognition.face_distance(encodings_known, encoding)
                                     
-                                    print('Face Distance: ', faceDis)
+                                    # print('Face Distance: ', faceDis)
                                     matchIndex = np.argmin(faceDis)
 
                                     if matches[matchIndex]:
+                                        print('Face Distance: ', faceDis[matchIndex])
                                         presentCount += 1
                                         # print('Matched: ', pks[matchIndex])
 
 
                                         student = pks[matchIndex]
-                                        print('Student Name: ' + student.student_name)
+                                        print('Student Name: ' + student.student_name, ' ----> Matched: ', pks[matchIndex].student_name)
                                         
                                         alreadyMarked = StudentAttendance.objects.filter(student=student, class_timing=classTime, time__year=now.year, time__month=now.month, time__day=now.day, course=course)
                                         if alreadyMarked.count() == 1:
                                             marked = alreadyMarked[0]
                                             marked.status = 'P'
-                                            print('Before Time: ', marked.time)
+                                            # print('Before Time: ', marked.time)
                                             marked.time = now
                                             marked.save()
-                                            print('After Time: ', marked.time)
+                                            # print('After Time: ', marked.time)
                                             continue
                                         elif alreadyMarked.count() > 1:
                                             for attendance in alreadyMarked:
@@ -1149,10 +1169,10 @@ def studentAttendance(request):
                                     elif alreadyMarked.count() == 1:
                                         marked = alreadyMarked[0]
                                         if marked.status == 'A':
-                                            print('Before Time: ', marked.time)
+                                            # print('Before Time: ', marked.time)
                                             marked.time = now
                                             marked.save()
-                                            print('After Time: ', marked.time)
+                                            # print('After Time: ', marked.time)
                             
                                 if presentCount > 0:
                                     absentCount = students_enrolled.count() - presentCount
@@ -1418,6 +1438,11 @@ def studentReport(request):
                             res = StudentAttendance.objects.filter(course=course).order_by('student', '-time')
                         except:
                             res = None
+
+                    elif not reg_no and not course and not date_from and not date_to:
+                        res = StudentAttendance.objects.all().order_by('student', '-time')
+                        if res.count() < 1:
+                            res = None
                     
                     elif not date_from and date_to:
                         messages.error(request, 'Invalid Date! Ensure date is not greater than today.  Please note that "Date to" must be greater than or equal to "Date From".')
@@ -1454,7 +1479,19 @@ def studentReport(request):
                 return render(request, 'progoffice/student_report.html', context)
                 
             else:
-                return render(request, 'progoffice/student_report.html', {'form': SearchStudentForm()})
+                res = StudentAttendance.objects.all().order_by('student', '-time')
+                if res.count() > 1:
+                    data_csv = DataCSV()
+                    np_bytes = pickle.dumps(res)
+                    np_base64 = base64.b64encode(np_bytes)
+                    data_csv.data = np_base64
+                    data_csv.save()
+                context = {
+                        'search': res,
+                        'form': SearchStudentForm(),
+                        'data_obj_pk': data_csv.pk,
+                    }
+                return render(request, 'progoffice/student_report.html', context)
         else:
             raise Http404()
     else:
@@ -1465,7 +1502,7 @@ def generateTeacherCSV(request):
     if request.user.is_authenticated:
         if request.user.is_superuser:
             pk = request.GET['pk']
-            print(pk)
+            # print(pk)
             try:
                 data_obj = DataCSV.objects.get(pk=pk)
                 np_bytes = base64.b64decode(data_obj.data)
@@ -1484,7 +1521,7 @@ def generateTeacherCSV(request):
             for count, obj in enumerate(query_set):
                 writer.writerow([count+1, obj.teacher.teacher_name, obj.teacher.user.email, obj.checkin_time, obj.checkout_time])
 
-            print(query_set)
+            # print(query_set)
 
             return response
         else:
@@ -1497,7 +1534,7 @@ def generateStudentCSV(request):
     if request.user.is_authenticated:
         if request.user.is_superuser:
             pk = request.GET['pk']
-            print(pk)
+            # print(pk)
             try:
                 data_obj = DataCSV.objects.get(pk=pk)
                 np_bytes = base64.b64decode(data_obj.data)
@@ -1516,7 +1553,7 @@ def generateStudentCSV(request):
             for count, obj in enumerate(query_set):
                 writer.writerow([count+1, obj.student.reg_no, obj.student.student_name, obj.course, obj.time, obj.status])
 
-            print(query_set)
+            # print(query_set)
 
             return response
         else:
@@ -1559,7 +1596,7 @@ def courseReport(request):
                                         data = StudentAttendance.objects.get(student=student, class_timing=timing, course=course)
                                     except:
                                         data = None
-                                    print('Data: ', data)
+                                    # print('Data: ', data)
                                     if data is not None:
                                         studentAttendance.append(data.status)
                                         if data.status == 'P':
@@ -1629,7 +1666,7 @@ def generateCourseCSV(request):
     if request.user.is_authenticated:
         if request.user.is_superuser:
             pk = request.GET['pk']
-            print(pk)
+            # print(pk)
             try:
                 data_obj = DataCSV.objects.get(pk=pk)
                 np_bytes = base64.b64decode(data_obj.data)

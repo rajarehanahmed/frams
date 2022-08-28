@@ -4,9 +4,10 @@ from django import forms
 from .models import Attendance, BulkAttendance, Course, SearchStudent, Student, Teacher, Timetable
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from validate_email_address import validate_email
-import cv2
-
+# from validate_email_address import validate_email
+# from pyisemail import is_email
+from email_validator import validate_email, EmailNotValidError
+# from validate_email import validate_email
 
 
 class LoginForm(AuthenticationForm):
@@ -34,8 +35,11 @@ class UserForm(UserCreationForm):
             self.add_error('username', 'Username is taken!')
         if User.objects.filter(email=cd.get('email')).exists():
             self.add_error('email', 'Email already exists!')
-        if not validate_email(str(cd.get('email'))):
+        try:
+            mail = validate_email(cd.get('email')).email
+        except EmailNotValidError as e:
             self.add_error('email', 'Invalid email address!')
+            print(str(e))
         return cd
 
 

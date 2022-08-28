@@ -22,7 +22,7 @@
         <br>
             {% if search %}
                 <table class="table table-bordered">
-                <thead>
+                <thead bgcolor="#212529" style="color: white">
                     <tr>
                     <th scope="col">Sr No</th>
                     <th scope="col">Reg No</th>
@@ -32,9 +32,9 @@
                     <th scope="col">Attendance</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="result_table">
                     {% for obj in search %}
-                        <tr>
+                        <tr class="{{ obj.student.reg_no }}">
                             <th scope="row">{{ forloop.counter }}</th>                    
                             <td>{{ obj.student.reg_no }}</td>
                             <td>{{ obj.student.student_name }}</td>
@@ -59,6 +59,28 @@
   <script>
     $(function() {
       $('#side-menu').metisMenu();
+    });
+
+    $(function() {
+        var rows = document.querySelector(".result_table").querySelectorAll("tr");
+
+        // loops through each row
+        for (i = 0; i < rows.length; i++) {
+
+            if (i == 0)
+                rows[i].style.backgroundColor = "white";
+            else if (rows[i].getAttribute("class") == rows[i-1].getAttribute("class")) {
+                rows[i].style.backgroundColor = rows[i-1].style.backgroundColor;
+            }
+            else {
+                if (rows[i-1].style.backgroundColor == "white")
+
+                    rows[i].style.backgroundColor = "rgb(247,247,249)"
+                else
+                    rows[i].style.backgroundColor = "white"
+            }
+
+        }
     });
 
     // Loads the correct sidebar on window load, collapses the sidebar on window resize.
