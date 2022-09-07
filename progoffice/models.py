@@ -24,7 +24,9 @@ class Teacher(models.Model):
     )
     Teacher_designations = (
         ('P', 'professor'),
-        ('AP', 'asst. professor')
+        ('AsP', 'associate professor'),
+        ('AP', 'asst. professor'),
+        ('Ins', 'instructor'),
     )
 
     def check_faces(face_img_obj):
@@ -44,7 +46,7 @@ class Teacher(models.Model):
     
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     teacher_name = models.CharField(max_length=50)
-    teacher_designation = models.CharField(max_length=2, choices=Teacher_designations)
+    teacher_designation = models.CharField(max_length=4, choices=Teacher_designations)
     teacher_status = models.CharField(max_length=1, choices=Teacher_Statuses)
     face_img = models.ImageField(upload_to='teachers/faces', default="", validators=[check_faces])
     face_encodings = models.BinaryField(null=True)
@@ -77,9 +79,9 @@ class Teacher(models.Model):
                     # img = cv2.resize(img, (0, 0), None, 0.25, 0.25)
                     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
                     faces = face_recognition.face_locations(img)
-                    # print('No. of Faces: ', len(faces))
+                    print('No. of Faces: ', len(faces))
                     encodings = face_recognition.face_encodings(img, faces)[0]
-                    # print('Encodings Stored*********         : ', encodings)
+                    print('Encodings Stored*********         : ', encodings)
                     np_bytes = pickle.dumps(encodings)
                     np_base64 = base64.b64encode(np_bytes)
                     self.face_encodings = np_base64
@@ -220,6 +222,13 @@ class Course(models.Model):
             return f'{self.course_code} {self.course_name} | {self.teacher.teacher_name}'
         else:
             return f'{self.course_code} {self.course_name}'
+    
+    def clean(self):
+        already_exists = Course.objects.filter(course_code=self.course_code, teacher=self.teacher)
+        if self.pk:
+            already_exists = already_exists.exclude(pk=self.pk)
+        if already_exists.exists():
+            raise ValidationError('Course already exists!')
 
 
 class CourseAdminModel(admin.ModelAdmin):
@@ -246,7 +255,7 @@ class ClassTiming(models.Model):
     end_time = models.TimeField()
 
     def __str__(self):
-        return str(self.start_time) + '-' + str(self.end_time)
+        return str(self.start_time.strftime("%I:%M %p")) + ' - ' + str(self.end_time.strftime("%I:%M %p"))
 
 
 class Timetable(models.Model):
@@ -257,7 +266,7 @@ class Timetable(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f'Room {str(self.room)} : Day{self.day} - {str(self.time)} | {str(self.course)} '
+        return f'Room {str(self.room)} : Day{self.day} - {str(self.time)} | {str(self.course)}'
 
 
 class TimetableAdminModel(admin.ModelAdmin):
@@ -349,7 +358,7 @@ class StudentAttendance(models.Model):
 
 class StudentAttendanceAdminModel(admin.ModelAdmin):
     search_fields=('time', 'status', 'id', 'student__reg_no', 'student__student_name')
-    list_display = ('student', 'time', 'course', 'status')
+    list_display = ('student', 'time', 'course', 'class_timing', 'status')
 
 
 class BulkAttendance(models.Model):

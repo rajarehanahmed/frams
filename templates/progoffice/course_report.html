@@ -51,8 +51,8 @@
             </div>
         {% elif course %}
             <div class="table-responsive">
-                <table class="table table-bordered">
-                <thead>
+                <table class="table table-bordered table-striped">
+                <thead bgcolor="#212529" style="color: white">
                     <tr>
                         <th colspan="1000" scope="col">{{ course }}</th>
                     </tr>
@@ -69,14 +69,15 @@
                             <td scope="row">{{ forloop.counter }}</td>
                             <td scope="row">{{ student.reg_no }}</td>
                             <td scope="row">{{ student.student_name }}</td>
+                            <td></td>
                         </tr>
                     {% endfor %}
                 </tbody>
                 </table>
             </div>
-            <div class="csv-btn">
-                <a href="{% url 'generate_course_csv_admin' %}?pk={{ data_obj_pk }}"><button type="submit" class="btn btn-primary">Download CSV</i></button></a>
-            </div>
+            {% comment %} <div class="csv-btn"> {% endcomment %}
+            <a href="{% url 'generate_course_csv_admin' %}?pk={{ data_obj_pk }}"><button type="submit" class="btn btn-primary">Download CSV</i></button></a>
+            {% comment %} </div> {% endcomment %}
             {% endif %}
         </div>
     </div>

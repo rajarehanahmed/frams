@@ -38,7 +38,7 @@
           <div class="sidebar-nav navbar-collapse">
             <ul class="nav" id="side-menu">
               <li><a href={% url 'office_home' %}><i class="fa fa-home"></i> Home</a></li>
-              <li><a href="/admin"><i class="fa fa-cog"></i> Data</a></li>
+              <li><a href="/admin"><i class="fa fa-cog"></i> Management</a></li>
               <li><a href="#"><i class="fa fa-user-plus"></i> Teacher<span class="fa arrow"></span></a>
                 <ul class="nav nav-second-level">
                   <li><a href={% url 'add_teacher' %}>Add Teacher</a></li>
@@ -54,7 +54,7 @@
               </li>
               <li><a href="#"><i class="fa fa-file-text"></i> Reports<span class="fa arrow"></span></a>
                 <ul class="nav nav-second-level">
-                  <li><a href={% url 'teacher_report_admin' %}>Teacher Report</a></li>
+                  <li><a href={% url 'teacher_report_admin' %}>Teacher Reports</a></li>
                   <li><a href={% url 'student_report_admin' %}>Student Reports</a></li>
                   <li><a href={% url 'course_report_admin' %}>Course Reports</a></li>
                 </ul>

@@ -31,15 +31,17 @@ class UserForm(UserCreationForm):
 
     def clean(self):
         cd = self.cleaned_data
-        if User.objects.filter(username=cd.get('username')).exists():
-            self.add_error('username', 'Username is taken!')
-        if User.objects.filter(email=cd.get('email')).exists():
-            self.add_error('email', 'Email already exists!')
         try:
-            mail = validate_email(cd.get('email')).email
-        except EmailNotValidError as e:
-            self.add_error('email', 'Invalid email address!')
-            print(str(e))
+            if User.objects.filter(username=cd.get('username')).exists():
+                self.add_error('username', 'Username is taken!')
+            if User.objects.filter(email=cd.get('email')).exists():
+                self.add_error('email', 'Email already exists!')
+        except:
+            pass
+        # try:
+        #     mail = validate_email(cd.get('email')).email
+        # except:
+        #     self.add_error('email', 'Invalid email address!')
         return cd
 
 

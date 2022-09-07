@@ -72,7 +72,7 @@ def signup(request):
                             'email': user.email,
                             'domain': current_site.domain,
                             'uid': force_str(urlsafe_base64_encode(force_bytes(user.pk))),
-                            'token': PasswordResetTokenGenerator().make_token(user)#generate_token.make_token(user)
+                            'token': generate_token.make_token(user)#PasswordResetTokenGenerator().make_token(user)
                         })
                         email = EmailMessage(email_subject, message2, settings.EMAIL_HOST_USER, [user.email])
                         email.send()
@@ -109,7 +109,7 @@ def activate(request, uidb64, token):
     except(TypeError, ValueError, OverflowError, User.DoesNotExist):
         myuser = None
 
-    if myuser is not None and PasswordResetTokenGenerator().check_token(myuser, token):#generate_token.check_token(myuser, token):
+    if myuser is not None and generate_token.check_token(myuser, token):#PasswordResetTokenGenerator().check_token(myuser, token):
         myuser.is_active = True
         myuser.save()
         return render(request, 'authentication/email_verified.html', {'head': 'Email Verified.', 'status': 'success'})

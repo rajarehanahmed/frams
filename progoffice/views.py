@@ -1,7 +1,6 @@
 import base64
 from cgitb import reset
 import csv
-import os
 import pickle
 from django.http import Http404, HttpResponse
 from django.shortcuts import redirect, render
@@ -11,7 +10,6 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes
 from django.utils.encoding import force_str
 from django.core.mail import EmailMessage, send_mail
-# from pandas import date_range
 from frams.tokens import generate_token
 from frams import settings
 from django.contrib.auth.models import User
@@ -24,8 +22,7 @@ import cv2
 import numpy as np
 import face_recognition
 from datetime import datetime
-from django.db.models import Count, Q
-import calendar
+from django.db.models import Q
 
 
 def home(request):
@@ -528,9 +525,9 @@ def completeSignup(request):
 def teacherAttendance(request):
     if request.user.is_authenticated:
         if request.user.is_superuser:
-            # if datetime.now().weekday() > 4:
-            #     messages.warning(request, 'Today is off!')
-            #     return redirect('index')
+            if datetime.now().weekday() > 4:
+                messages.warning(request, 'Today is off!')
+                return redirect('index')
             return render(request, 'progoffice/teacher_attendance.html')
         else:
             raise Http404()
@@ -541,9 +538,9 @@ def teacherAttendance(request):
 def teacherFaceAttendance(request):
     if request.user.is_authenticated:
         if request.user.is_superuser:
-            # if datetime.now().weekday() > 4:
-            #     messages.warning(request, 'Today is off!')
-            #     return redirect('index')
+            if datetime.now().weekday() > 4:
+                messages.warning(request, 'Today is off!')
+                return redirect('index')
             if request.method == 'POST':
                 users = User.objects.filter(is_active=True)
                 if Teacher.objects.filter(user__in=list(users), teacher_status='V').count() > 0:
@@ -560,7 +557,7 @@ def teacherFaceAttendance(request):
                         img = cv2.imread(f'{path}/{filename}')
 
                         try:
-                            img = cv2.resize(img, None, fx=0.25, fy=0.25)
+                            # img = cv2.resize(img, None, fx=0.25, fy=0.25)
                             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
                             faces = face_recognition.face_locations(img)
                         except:
@@ -582,10 +579,7 @@ def teacherFaceAttendance(request):
                             encodeList = []
                             pks = []
                             
-                            # counter = 0
                             for obj in Teacher.objects.filter(teacher_status='V', user__in=list(users)):
-                                # counter += 1
-                                # print(counter)
                                 try:
                                     np_bytes = base64.b64decode(obj.face_encodings)
                                 except:
@@ -599,7 +593,7 @@ def teacherFaceAttendance(request):
                                 # encodings_known = np.append(encodings_known, encodings)
 
 
-                            matches = face_recognition.compare_faces(encodeList, encodings_test, 0.5)
+                            matches = face_recognition.compare_faces(encodeList, encodings_test, 0.6)
                             faceDis = face_recognition.face_distance(encodeList, encodings_test)
                             
                             matchIndex = np.argmin(faceDis)
@@ -651,9 +645,9 @@ def teacherFaceAttendance(request):
 def teacherFingerprintAttendance(request):
     if request.user.is_authenticated:
         if request.user.is_superuser:
-            # if datetime.now().weekday() > 4:
-            #     messages.warning(request, 'Today is off!')
-            #     return redirect('index')
+            if datetime.now().weekday() > 4:
+                messages.warning(request, 'Today is off!')
+                return redirect('index')
             if request.method == 'POST':
                 users = User.objects.filter(is_active=True)
                 if Teacher.objects.filter(user__in=list(users), teacher_status='V').count() > 0:
@@ -847,7 +841,7 @@ def teacherReport(request):
                         pass
                     if start_date > end_date or start_date > today_obj or end_date > today_obj:
                         messages.error(request, 'Invalid Date! Please note that "Date to" must be greater than or equal to "Date From".')
-                        return redirect('teacher_report')
+                        return redirect('teacher_report_admin')
                     
                     elif start_date == end_date:
                         res = Attendance.objects.filter(teacher=teacher).filter(Q(checkin_time__year=start_date.year) and Q(checkin_time__month=start_date.month) and Q(checkin_time__day=start_date.day)).order_by('-checkin_time')
@@ -862,7 +856,7 @@ def teacherReport(request):
                     end_date = datetime.strptime(date_to, "%Y-%m-%d")
                     if start_date > end_date or start_date > today_obj or end_date > today_obj:
                         messages.error(request, 'Invalid Date! Please note that "Date to" must be greater than or equal to "Date From".')
-                        return redirect('teacher_report')
+                        return redirect('teacher_report_admin')
                     
                     elif start_date == end_date:
                         try:
@@ -879,7 +873,7 @@ def teacherReport(request):
                     start_date = datetime.strptime(date_from, "%Y-%m-%d")
                     if start_date > today_obj:
                         messages.error(request, 'Invalid Date! Ensure date is not greater than today. Please note that "Date to" must be greater than or equal to "Date From".')
-                        return redirect('teacher_report')
+                        return redirect('teacher_report_admin')
                     elif start_date == today_obj:
                         try:
                             res = Attendance.objects.filter(Q(checkin_time__year=start_date.year) and Q(checkin_time__month=start_date.month) and Q(checkin_time__day=start_date.day)).order_by('teacher', '-checkin_time')
@@ -899,7 +893,7 @@ def teacherReport(request):
                         pass
                     if start_date > today_obj:
                         messages.error(request, 'Invalid Date! Ensure date is not greater than today.  Please note that "Date to" must be greater than or equal to "Date From".')
-                        return redirect('teacher_report')
+                        return redirect('teacher_report_admin')
                     
                     elif start_date == today_obj:
                         try:
@@ -1509,7 +1503,7 @@ def generateTeacherCSV(request):
                 query_set = pickle.loads(np_bytes)
             except:
                 messages.warning(request, 'No data found!')
-                return redirect('teacher_report')
+                return redirect('teacher_report_admin')
             response = HttpResponse(content_type='text/csv')
             response['Content-Disposition'] = 'attachment; filename=teacher_report.csv'
 
@@ -1578,7 +1572,10 @@ def courseReport(request):
                         pkTimings = StudentAttendance.objects.filter(course=course, time__year=date.year, time__month=date.month, time__day=date.day).values('class_timing').distinct()
                         classTimesDay = []
                         for pk in pkTimings:
-                            classTimesDay.append(ClassTiming.objects.get(pk=pk['class_timing']))
+                            try:
+                                classTimesDay.append(ClassTiming.objects.get(pk=pk['class_timing']))
+                            except:
+                                pass
                         classTimings.append(classTimesDay)
                         totalClasses += len(classTimesDay)
 
@@ -1611,7 +1608,7 @@ def courseReport(request):
                     classes = []
                     for date in classDates:
                         for timing in classTimings[counter]:
-                            classes.append(f'{date} {timing}')
+                            classes.append(f'{date} | {timing}')
                         counter += 1
 
                     if len(attendanceSheet) > 0:
