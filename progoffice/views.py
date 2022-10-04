@@ -1,6 +1,7 @@
 import base64
 from cgitb import reset
 import csv
+import os
 import pickle
 from django.http import Http404, HttpResponse
 from django.shortcuts import redirect, render
@@ -60,10 +61,10 @@ def home(request):
             nextClassTime = None
             if classTime.count() > 0:
                 nextClasses = Timetable.objects.filter(time=classTime[0], day=now.weekday())
-                print('Next ClassTime: ', nextClasses)
+                # print('Next ClassTime: ', nextClasses)
                 if nextClasses.count() > 0:
-                    nextClassTime = f'at {nextClasses[0].time.start_time}'
-                    print('nextClassTime: ', nextClassTime)
+                    nextClassTime = f'at {nextClasses[0].time.start_time.strftime("%I:%M %p")}'
+                    # print('nextClassTime: ', nextClassTime)
 
             if nextClassTime is None:
                 if now.weekday() >= 4:
@@ -75,8 +76,8 @@ def home(request):
                     if nextClasses.count() > 1:
                         nextClassTime = f'on {days[int(nextClasses[0].day)]}'
             
-            print('Current: ', currentClassTime, isTaken)
-            print('Next: ', nextClassTime)
+            # print('Current: ', currentClassTime, isTaken)
+            # print('Next: ', nextClassTime)
 
             context = {
                 'pendingRegs': pendingRegs,
@@ -466,7 +467,7 @@ def completeSignup(request):
 
                         try:
                             pr = PendingRegistration.objects.get(teacher=teacher)
-                            print('Pending Registration: ', pr)
+                            # print('Pending Registration: ', pr)
                             pr.delete()
                         except:
                             pass
@@ -484,21 +485,21 @@ def completeSignup(request):
                             email = EmailMessage(email_subject, message2, settings.EMAIL_HOST_USER, [user.email])
                             email.send()
                         except:
-                            # try:
-                            #     os.remove(teacher.face_img.path)
-                            #     os.remove(teacher.right_thumb_img.path)
-                            #     os.remove(teacher.right_index_img.path)
-                            #     os.remove(teacher.right_middle_img.path)
-                            #     os.remove(teacher.right_ring_img.path)
-                            #     os.remove(teacher.right_little_img.path)
-                            #     teacher.face_img.delete()
-                            #     teacher.right_thumb_img.delete()
-                            #     teacher.right_index_img.delete()
-                            #     teacher.right_middle_img.delete()
-                            #     teacher.right_ring_img.delete()
-                            #     teacher.right_little_img.delete()
-                            # except:
-                            #     pass
+                            try:
+                                os.remove(teacher.face_img.path)
+                                os.remove(teacher.right_thumb_img.path)
+                                os.remove(teacher.right_index_img.path)
+                                os.remove(teacher.right_middle_img.path)
+                                os.remove(teacher.right_ring_img.path)
+                                os.remove(teacher.right_little_img.path)
+                                teacher.face_img.delete()
+                                teacher.right_thumb_img.delete()
+                                teacher.right_index_img.delete()
+                                teacher.right_middle_img.delete()
+                                teacher.right_ring_img.delete()
+                                teacher.right_little_img.delete()
+                            except:
+                                pass
                             pr = PendingRegistration(teacher=teacher)
                             pr.save()
                             messages.error(request, "Sending verification email failed!")
