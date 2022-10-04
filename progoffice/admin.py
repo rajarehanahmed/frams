@@ -1,9 +1,31 @@
+from dataclasses import field
+import time
 from django.contrib import admin
-from .models import Student, Teacher, Course, Enrollment, PendingRegistration
+from django import forms
+import cv2
 
-# Register your models here.
-admin.site.register(Student)
-admin.site.register(Teacher)
-admin.site.register(Course)
-admin.site.register(Enrollment)
-admin.site.register(PendingRegistration)
+# from .forms import StudentUptionForm
+from .models import Attendance, AttendanceAdminModel, BulkAttendanceAdminModel, ClassTiming, Student, StudentAttendanceAdminModel, Teacher, TeacherAdminModel, Course, CourseAdminModel, ClassRoom, ClassRoomAdminModel, Timetable, TimetableAdminModel, StudentAttendance, BulkAttendance
+
+
+
+class StudentUpdationForm(forms.ModelForm):
+    class Meta:
+        model = Student
+        fields = '__all__'
+
+class StudentAdmin(admin.ModelAdmin):
+    form = StudentUpdationForm
+    search_fields=('reg_no', 'student_name')
+    list_display = ('reg_no', 'student_name', 'father_name')
+    # readonly_fields = ('reg_no',)
+
+admin.site.register(Student, StudentAdmin)
+admin.site.register(Teacher, TeacherAdminModel)
+admin.site.register(Course, CourseAdminModel)
+admin.site.register(ClassRoom, ClassRoomAdminModel)
+admin.site.register(Timetable, TimetableAdminModel)
+admin.site.register(StudentAttendance, StudentAttendanceAdminModel)
+admin.site.register(Attendance, AttendanceAdminModel)
+admin.site.register(BulkAttendance, BulkAttendanceAdminModel)
+admin.site.register(ClassTiming)

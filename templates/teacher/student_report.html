@@ -1,0 +1,77 @@
+{% extends 'teacher/base.html' %}
+
+{% block title %} Student Report {% endblock title %}
+
+{% block body %}
+    <div class="search" style="margin-top: 50px">
+        <form method="POST" action={% url 'student_report' %}>
+            {% csrf_token %}
+            <label for="name">Reg No</label>
+            {{ form.reg_no }}
+            <label for="name">Course</label>
+            {{ form.course }}
+            <label for="date_from">Date From</label>
+            <input type="date" id="date_from" name="date_from" {% if date_from %} value="{{ date_from }}" {% endif %}>
+            <label for="date_to">Date To</label>
+            <input type="date" id="date_to" name="date_to" {% if date_to %} value="{{ date_to }}" {% endif %}>
+            <button type="submit" class="btn btn-primary" style="margin-left: 50px;">Search</i></button>
+        </form>
+    </div>
+
+    {% if search %}
+        <table class="table table-bordered" style="font-size: 13px">
+        <thead bgcolor="#212529" style="color: white">
+            <tr>
+            <td>Sr No</td>
+            <td scope="col">Name</td>
+            <td scope="col">Reg No</td>
+            <td scope="col">Course</td>
+            <td scope="col">Time</td>
+            <td scope="col">Attendance</td>
+            </tr>
+        </thead>
+        <tbody class="result_table">
+            {% for obj in search %}
+                <tr class="{{ obj.student.reg_no }}">
+                    <th scope="row">{{ forloop.counter }}</th>                    
+                    <td>{{ obj.student.reg_no }}</td>
+                    <td>{{ obj.student.student_name }}</td>
+                    <td>{{ obj.course }}</td>
+                    <td>{{ obj.time }}</td>
+                    <td>{{ obj.status }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+        </table>
+        <div class="csv-btn">
+            <a href="{% url 'generate_student_csv' %}?pk={{ data_obj_pk }}"><button type="submit" class="btn btn-primary">Download CSV</i></button></a>
+        </div>
+    {% else %}
+        <div class="col-md-4"></div>
+        <img src="/media/images/no_data.jpg" alt="No data" width="400" height="400">
+    {% endif %}        
+{% endblock body %}
+
+{% block script %}
+    $(function() {
+        var rows = document.querySelector(".result_table").querySelectorAll("tr");
+
+        // loops through each row
+        for (i = 0; i < rows.length; i++) {
+
+            if (i == 0)
+                rows[i].style.backgroundColor = "white";
+            else if (rows[i].getAttribute("class") == rows[i-1].getAttribute("class")) {
+                rows[i].style.backgroundColor = rows[i-1].style.backgroundColor;
+            }
+            else {
+                if (rows[i-1].style.backgroundColor == "white")
+
+                    rows[i].style.backgroundColor = "RGB(247 247 255)"
+                else
+                    rows[i].style.backgroundColor = "white"
+            }
+
+        }
+    });
+{% endblock script %}

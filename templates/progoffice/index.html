@@ -1,67 +1,480 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+{% extends "base.html" %}
 
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+{% block title%}Admin | Home{% endblock %}
 
-    <title>Programme Office Homepage</title>
-  </head>
-  <body class="text-center">
-    <nav class="navbar navbar-expand-lg navbar-dark bg-success">
-      <div class="container-fluid text">
-        <a class="navbar-brand" href="/">FRAMS</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-            <li class="nav-item">
-              <a class="nav-link active" aria-current="page" href="/">Home</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/admin">Admin panel</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/pendingRegistrations">Pending Registrations</a>
-            </li>
-          </ul>
-          
-          {% comment %} <a href="/signout/">
-            <button class="btn btn-primary" type="button">Signout</button>
-          </a> {% endcomment %}
-          <ul class="navbar-nav ml-auto">
-            <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle active" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                Welcome {{ request.user }}
+
+{% block body %}
+<!-- /Body Header-->
+
+  <div class="row">
+    <div class="col-lg-12">
+      <h1 class="page-header">Home</h1>
+    </div>
+  </div>
+  <!-- /Body Infoblock Row-->
+  <div class="row">
+    <div class="col-lg-4 col-md-6">
+      <div class="panel panel-primary">
+        <div class="panel-heading">
+          <div class="row">
+            <div class="col-xs-3"><i class="fa fa-calendar fa-5x"></i></div>
+            <div class="col-xs-9 text-right">
+              <div class="huge">{{ classes_count }}</div>
+              <div>Classes Today</div>
+            </div>
+          </div>
+        </div><a>
+          <div class="panel-footer"><span class="pull-left"></span><span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+            <div class="clearfix"></div>
+          </div></a>
+      </div>
+    </div>
+    <div class="col-lg-4 col-md-6">
+      <div class="panel panel-green">
+        <div class="panel-heading">
+          <div class="row">
+            <div class="col-xs-3"><i class="fa fa-home fa-5x"></i></div>
+            <div class="col-xs-9 text-right">
+              <div class="huge">2</div>
+              <div>Total Rooms</div>
+            </div>
+          </div>
+        </div><a>
+          <div class="panel-footer"><span class="pull-left"></span><span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+            <div class="clearfix"></div>
+          </div></a>
+      </div>
+    </div>          
+    <div class="col-lg-4 col-md-6">
+      <div class="panel panel-yellow">
+        <div class="panel-heading">
+          <div class="row">
+            <div class="col-xs-3"><i class="fa fa-user-plus fa-5x"></i></div>
+            <div class="col-xs-9 text-right">
+              <div class="huge">{{ checkin_count }}</div>
+              <div>Teachers Checked-in Today</div>
+            </div>
+          </div>
+        </div><a>
+          <div class="panel-footer"><span class="pull-left"></span><span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+            <div class="clearfix"></div>
+          </div></a>
+      </div>
+    </div>
+  </div>
+   
+  <div class="row">
+    <div class="col-lg-4 col-md-6">
+      <div class="panel panel-red">
+        <div class="panel-heading">
+          <div class="row">
+            <div class="col-xs-3"><i class="fa fa-user-plus fa-5x"></i></div>
+            <div class="col-xs-9 text-right">
+              <div class="huge">{{ checkout_count }}</div>
+              <div>Teachers Checked-out Today</div>
+            </div>
+          </div>
+        </div><a>
+          <div class="panel-footer"><span class="pull-left"></span><span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+            <div class="clearfix"></div>
+          </div></a>
+      </div>
+    </div>
+    <div class="col-lg-4 col-md-6">
+      <div class="panel panel-primary">
+        <div class="panel-heading">
+          <div class="row">
+            <div class="col-xs-3"><i class="fa fa-calendar fa-5x"></i></div>
+            <div class="col-xs-9 text-right">
+              <h3>Live Attendance</h3>
+              <div>
+                {% if current_class_time %}
+                  {{is_taken}}
+                {% else %}
+                  No classes for now
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div><a>
+          <div class="panel-footer"><span class="pull-left"></span><span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+            <div class="clearfix"></div>
+          </div></a>
+      </div>
+    </div>
+    <div class="col-lg-4 col-md-6">
+      <div class="panel panel-green">
+        <div class="panel-heading">
+          <div class="row">
+            <div class="col-xs-3"><i class="fa fa-home fa-5x"></i></div>
+            <div class="col-xs-9 text-right">
+              <h3>Next Class</h3>
+              <div>{{ next_class_time }}</div>
+            </div>
+          </div>
+        </div><a>
+          <div class="panel-footer"><span class="pull-left"></span><span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+            <div class="clearfix"></div>
+          </div></a>
+      </div>
+    </div>
+  </div>
+  
+  <div class="row">
+    <!-- /Donut Chart -->
+    <div class="col-lg-6">
+      <div class="panel panel-default">
+        <div class="panel-heading"><i class="fa fa-bar-chart-o fa-fw"></i> Total Registered Users</div>
+        <div class="panel-body">
+          <div id="morris-donut-chart"></div>
+        </div>
+      </div>      
+    </div>
+
+    <div class="col-lg-6">
+      <div class="panel panel-default">
+        <div class="panel-heading"><i class="fa fa-bell fa-fw"></i> Pending Registrations </div>
+        <div class="panel-body">
+          <div class="list-group">
+            {% for reg in pendingRegs|slice:":5" %}
+              <a id="src_btn{{ forloop.counter }}" class="list-group-item src_btn">
+                {{ forloop.counter }}.  {{ reg.teacher.user.email }}
               </a>
-              <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                <li><a class="dropdown-item" href="/signout/">Logout</a></li>
-              </ul>
-            </li>
-          </ul>
+              <form method="post" action={% url 'pending_registrations' %}>
+                {% csrf_token %}
+                <input id="target_btn{{ forloop.counter }}" type="submit" style="display: none">
+                <input type="hidden" name="email" value="{{ reg.teacher.user.email }}">
+              </form>
+            {% endfor %}
+          </div>
+          <a class="btn btn-default btn-block" href={% url 'pending_registrations' %}>View All</a>
         </div>
       </div>
-    </nav>
-    
-    {% for message in messages %}
-      <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-        <strong>{{message}}!</strong>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+  </div>
+  </script><script  src="./script.js"></script>  
+{% endblock body %}
+
+{% block js %}
+  <script>
+    var teachers = {{ teachers_count }};
+    var students = {{ students_count }};
+    $(function() {
+        Morris.Donut({
+            element: 'morris-donut-chart',
+            data: [{
+                label: "Total Students",
+                value: students
+            }, {
+                label: "Total Teachers",
+                value: teachers
+            }, ],
+            resize: true
+        });        
+    });
+
+    $(function() {
+
+        $('#side-menu').metisMenu();
+
+    });
+
+    // Loads the correct sidebar on window load, collapses the sidebar on window resize.
+    // Sets the min-height of #page-wrapper to window size
+    $(function() {
+        $(window).bind("load resize", function() {
+            topOffset = 50;
+            width = (this.window.innerWidth > 0) ? this.window.innerWidth : this.screen.width;
+            if (width < 768) {
+                $('div.navbar-collapse').addClass('collapse');
+                topOffset = 100; // 2-row-menu
+            } else {
+                $('div.navbar-collapse').removeClass('collapse');
+            }
+
+            height = ((this.window.innerHeight > 0) ? this.window.innerHeight : this.screen.height) - 1;
+            height = height - topOffset;
+            if (height < 1) height = 1;
+            if (height > topOffset) {
+                $("#page-wrapper").css("min-height", (height) + "px");
+            }
+        });
+
+        var url = window.location;
+        var element = $('ul.nav a').filter(function() {
+            return this.href == url || url.href.indexOf(this.href) == 0;
+        }).addClass('active').parent().parent().addClass('in').parent();
+        if (element.is('li')) {
+            element.addClass('active');
+        }
+    });
+    function click1() {
+      $("#target_btn1").click();
+    }
+    function click2() {
+      $("#target_btn2").click();
+    }
+    function click3() {
+      $("#target_btn3").click();
+    }
+    function click4() {
+      $("#target_btn4").click();
+    }
+    function click5() {
+      $("#target_btn5").click();
+    }
+    document.querySelector(".src_btn").onmouseover = function() {
+      $(".src_btn").css('cursor', 'pointer'); 
+    }
+    document.querySelector("#src_btn1").addEventListener("click", click1);
+    document.querySelector("#src_btn2").addEventListener("click", click2);
+    document.querySelector("#src_btn3").addEventListener("click", click3);
+    document.querySelector("#src_btn4").addEventListener("click", click4);
+    document.querySelector("#src_btn5").addEventListener("click", click5);
+    {% comment %} document.querySelector(".src_btn").addEventListener("mouseover", makePointer); {% endcomment %}
+  </script>
+{% endblock js %}
+
+
+
+{% comment %} {% extends "base.html" %}
+
+{% block title%}Admin | Home{% endblock %}
+
+
+{% block body %}
+<!-- /Body Header-->
+
+  <div class="row">
+    <div class="col-lg-12">
+      <h1 class="page-header">Home</h1>
+    </div>
+  </div>
+  <!-- /Body Infoblock Row-->
+  <div class="row">
+    <div class="col-lg-3 col-md-6">
+      <div class="panel panel-primary">
+        <div class="panel-heading">
+          <div class="row">
+            <div class="col-xs-3"><i class="fa fa-calendar fa-5x"></i></div>
+            <div class="col-xs-9 text-right">
+              <div class="huge">{{ classes_count }}</div>
+              <div>Classes <br> Today</div>
+            </div>
+          </div>
+        </div><a href="#">
+          <div class="panel-footer"><span class="pull-left"></span><span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+            <div class="clearfix"></div>
+          </div></a>
       </div>
-    {% endfor %}
-    <!-- Optional JavaScript; choose one of the two! -->
+    </div>
+    <div class="col-lg-3 col-md-6">
+      <div class="panel panel-green">
+        <div class="panel-heading">
+          <div class="row">
+            <div class="col-xs-3"><i class="fa fa-home fa-5x"></i></div>
+            <div class="col-xs-9 text-right">
+              <div class="huge">2</div>
+              <div>Total <br> Rooms</div>
+            </div>
+          </div>
+        </div><a href="#">
+          <div class="panel-footer"><span class="pull-left"></span><span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+            <div class="clearfix"></div>
+          </div></a>
+      </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+      <div class="panel panel-yellow">
+        <div class="panel-heading">
+          <div class="row">
+            <div class="col-xs-3"><i class="fa fa-user-plus fa-5x"></i></div>
+            <div class="col-xs-9 text-right">
+              <div class="huge">{{ checkin_count }}</div>
+              <div>Teachers <br> Checked-in Today</div>
+            </div>
+          </div>
+        </div><a href="#">
+          <div class="panel-footer"><span class="pull-left"></span><span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+            <div class="clearfix"></div>
+          </div></a>
+      </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+      <div class="panel panel-red">
+        <div class="panel-heading">
+          <div class="row">
+            <div class="col-xs-3"><i class="fa fa-user-plus fa-5x"></i></div>
+            <div class="col-xs-9 text-right">
+              <div class="huge">{{ checkout_count }}</div>
+              <div>Teachers <br> Checked-out Today</div>
+            </div>
+          </div>
+        </div><a href="#">
+          <div class="panel-footer"><span class="pull-left">View Details</span><span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+            <div class="clearfix"></div>
+          </div></a>
+      </div>
+    </div>
+  </div>
+  <!-- /Area Chart-->
+  <div class="row">
+    <div class="col-lg-8">
+      <div class="panel panel-default">
+        <div class="panel-heading"><i class="fa fa-bar-chart-o fa-fw"></i> New Registrations</div>
+        <div class="panel-body">
+          <div id="morris-bar-chart"></div>
+        </div>
+      </div>
+    </div>
+    <!-- /Notification Panel-->
+    <div class="col-lg-4">
+      <div class="panel panel-default">
+        <div class="panel-heading"><i class="fa fa-bell fa-fw"></i> Pending Registrations </div>
+        <div class="panel-body">
+          <div class="list-group">
+            {% for reg in pendingRegs|slice:":5" %}
+              <a id="src_btn{{ forloop.counter }}" class="list-group-item src_btn">
+                {{ forloop.counter }}.  {{ reg.teacher.user.email }}
+              </a>
+              <form method="post" action={% url 'pending_registrations' %}>
+                {% csrf_token %}
+                <input id="target_btn{{ forloop.counter }}" type="submit" style="display: none">
+                <input type="hidden" name="email" value="{{ reg.teacher.user.email }}">
+              </form>
+            {% endfor %}
+          </div>
+          <a class="btn btn-default btn-block" href={% url 'pending_registrations' %}>View All</a>
+        </div>
+      </div>
+      <!-- /Donut Chart-->
+      <div class="panel panel-default">
+        <div class="panel-heading"><i class="fa fa-bar-chart-o fa-fw"></i> Total Registered Users</div>
+        <div class="panel-body">
+          <div id="morris-donut-chart"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </script><script  src="./script.js"></script>
+{% endblock body %}
 
-    <!-- Option 1: Bootstrap Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+{% block js %}
+  <script>
+    var teachers = {{ teachers_count }};
+    var students = {{ students_count }};
+    $(function() {
+        Morris.Donut({
+            element: 'morris-donut-chart',
+            data: [{
+                label: "Total Students",
+                value: students
+            }, {
+                label: "Total Teacher",
+                value: teachers
+            }, ],
+            resize: true
+        });
 
-    <!-- Option 2: Separate Popper and Bootstrap JS -->
-    <!--
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js" integrity="sha384-7+zCNj/IqJ95wo16oMtfsKbZ9ccEh31eOz1HGyDuCQ6wgnyJNSYdrPa03rtR1zdB" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js" integrity="sha384-QJHtvGhmr9XOIpI6YVutG+2QOK9T+ZnN4kzFN1RtK3zEFEIsxhlmWl5/YESvpZ13" crossorigin="anonymous"></script>
-    -->
-  </body>
-</html>
+        Morris.Bar({
+            element: 'morris-bar-chart',
+            data: [{
+                y: '06 2022',
+                a: 5,
+                b: 10
+            }, {
+                y: '07 2022',
+                a: 10,
+                b: 2
+            }, {
+                y: '08 2022',
+                a: 18,
+                b: 1
+            }, {
+                y: '09 2022',
+                a: 18,
+                b: 2
+            }, {
+                y: '10 2022',
+                a: 10,
+                b: 1
+            }, {
+                y: '11 2022',
+                a: 20,
+                b: 2
+            }, {
+                y: '12 2022',
+                a: 8,
+                b: 1
+            }],
+            xkey: 'y',
+            ykeys: ['a', 'b'],
+            labels: ['Students', 'Teacher'],
+            hideHover: 'auto',
+            resize: true
+        });
+
+    });
+
+    $(function() {
+
+        $('#side-menu').metisMenu();
+
+    });
+
+    // Loads the correct sidebar on window load, collapses the sidebar on window resize.
+    // Sets the min-height of #page-wrapper to window size
+    $(function() {
+        $(window).bind("load resize", function() {
+            topOffset = 50;
+            width = (this.window.innerWidth > 0) ? this.window.innerWidth : this.screen.width;
+            if (width < 768) {
+                $('div.navbar-collapse').addClass('collapse');
+                topOffset = 100; // 2-row-menu
+            } else {
+                $('div.navbar-collapse').removeClass('collapse');
+            }
+
+            height = ((this.window.innerHeight > 0) ? this.window.innerHeight : this.screen.height) - 1;
+            height = height - topOffset;
+            if (height < 1) height = 1;
+            if (height > topOffset) {
+                $("#page-wrapper").css("min-height", (height) + "px");
+            }
+        });
+
+        var url = window.location;
+        var element = $('ul.nav a').filter(function() {
+            return this.href == url || url.href.indexOf(this.href) == 0;
+        }).addClass('active').parent().parent().addClass('in').parent();
+        if (element.is('li')) {
+            element.addClass('active');
+        }
+    });
+    function click1() {
+      $("#target_btn1").click();
+    }
+    function click2() {
+      $("#target_btn2").click();
+    }
+    function click3() {
+      $("#target_btn3").click();
+    }
+    function click4() {
+      $("#target_btn4").click();
+    }
+    function click5() {
+      $("#target_btn5").click();
+    }
+    document.querySelector(".src_btn").onmouseover = function() {
+      $(".src_btn").css('cursor', 'pointer'); 
+    }
+    document.querySelector("#src_btn1").addEventListener("click", click1);
+    document.querySelector("#src_btn2").addEventListener("click", click2);
+    document.querySelector("#src_btn3").addEventListener("click", click3);
+    document.querySelector("#src_btn4").addEventListener("click", click4);
+    document.querySelector("#src_btn5").addEventListener("click", click5);
+    {% comment %} document.querySelector(".src_btn").addEventListener("mouseover", makePointer); {% endcomment %
+  </script>
+{% endblock js %} {% endcomment %}

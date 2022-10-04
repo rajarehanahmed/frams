@@ -1,71 +1,94 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+{% extends 'base.html' %}
 
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+{% block title %}Pending Registration{% endblock title %}
 
-    <title>Pending Registrations</title>
-  </head>
-  <body class="text-center">
-    <nav class="navbar navbar-expand-lg navbar-dark bg-success">
-      <div class="container-fluid">
-        <a class="navbar-brand" href="/">FRAMS</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-            <li class="nav-item">
-              <a class="nav-link" aria-current="page" href="/">Home</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/admin">Admin panel</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link active" href="/pendingRegistrations">Pending Registrations</a>
-              </li>
-          </ul>
-          
-          <ul class="navbar-nav ml-auto">
-            <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle active" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                Welcome {{ request.user }}
-              </a>
-              <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                <li><a class="dropdown-item" href="/signout/">Logout</a></li>
-              </ul>
-            </li>
-          </ul>
-        </div>
+{% block body %}
+  <div class="row">
+    <div class="col-lg-12">
+      <h1 class="page-header">Pending Registrations</h1>
+    </div>
+  </div>
+
+  
+  {% if pending_regs %}
+    <div class="row">
+      <div class="col-12">
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th scope="col">Sr No</th>
+              <th scope="col">Teacher Name</th>
+              <th scope="col">Email</th>
+              <th scope="col">Time</th>
+              <th scope="col">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for reg in pending_regs %}
+              <tr>
+                <th scope="row">{{ forloop.counter }}</th>
+                <td>{{ reg.teacher.teacher_name }}</td>
+                <td>{{ reg.teacher.user.email }}</td>
+                <td>{{ reg.teacher.user.date_joined }}</td>
+                <td>
+                  <form style="display: inline;" method="post" action={% url 'pending_registrations' %}>
+                    {% csrf_token %}
+                      <input type="hidden" name="email" value="{{ reg.teacher.user.email }}">
+                      <input type="submit" value="View" class="btn btn-primary">
+                  </form>
+                  <form style="display: inline;" method="post" action={% url 'delete_pending_reg' %}>
+                    {% csrf_token %}
+                    <input type="hidden" name="email" value="{{ reg.teacher.user.email }}">
+                    <input type="submit" value="Discard" class="btn btn-danger">
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
       </div>
-    </nav>
+    </div>
+  {% else %}
+    <div class="col-md-4"></div>
+      <img src="/media/images/no_data.jpg" alt="No data" width="400" height="400">
+  {% endif %}
+{% endblock body %}
 
-    {% for message in messages %}
-      <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-        <strong>{{message}}!</strong> <a href="/signin/">Login Here</a>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-      </div>
-    {% endfor %}
+{% block js %}
+  <script>
+    $(function() {
+      $('#side-menu').metisMenu();
+    });
 
-    {% for reg in pendingRegs %}
-      <div class="container my-4">
-          Name: {{ reg.teacher_id.teacher_name }} | Email: {{ reg.teacher_id.user_id.email }} | Created: {{ reg.teacher_id.created_at }} <form style="display: inline;" method="post" action="/pendingRegistrations/">{% csrf_token %}<input type="hidden" name="email" value="{{ reg.teacher_id.user_id.email }}"><input type="submit" value="View" class="mx-2 btn-sm btn-primary"></form>
-      </div>
-    {% endfor %}
+    // Loads the correct sidebar on window load, collapses the sidebar on window resize.
+    // Sets the min-height of #page-wrapper to window size
 
-    <!-- Optional JavaScript; choose one of the two! -->
+    $(function() {
+        $(window).bind("load resize", function() {
+            topOffset = 50;
+            width = (this.window.innerWidth > 0) ? this.window.innerWidth : this.screen.width;
+            if (width < 768) {
+                $('div.navbar-collapse').addClass('collapse');
+                topOffset = 100; // 2-row-menu
+            } else {
+                $('div.navbar-collapse').removeClass('collapse');
+            }
 
-    <!-- Option 1: Bootstrap Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+            height = ((this.window.innerHeight > 0) ? this.window.innerHeight : this.screen.height) - 1;
+            height = height - topOffset;
+            if (height < 1) height = 1;
+            if (height > topOffset) {
+                $("#page-wrapper").css("min-height", (height) + "px");
+            }
+        });
 
-    <!-- Option 2: Separate Popper and Bootstrap JS -->
-    <!--
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js" integrity="sha384-7+zCNj/IqJ95wo16oMtfsKbZ9ccEh31eOz1HGyDuCQ6wgnyJNSYdrPa03rtR1zdB" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js" integrity="sha384-QJHtvGhmr9XOIpI6YVutG+2QOK9T+ZnN4kzFN1RtK3zEFEIsxhlmWl5/YESvpZ13" crossorigin="anonymous"></script>
-    -->
-  </body>
-</html>
+        var url = window.location;
+        var element = $('ul.nav a').filter(function() {
+            return this.href == url || url.href.indexOf(this.href) == 0;
+        }).addClass('active').parent().parent().addClass('in').parent();
+        if (element.is('li')) {
+            element.addClass('active');
+        }
+    });
+  </script>
+{% endblock js %}

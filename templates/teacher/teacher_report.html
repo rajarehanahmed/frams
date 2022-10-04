@@ -1,0 +1,50 @@
+{% extends 'teacher/base.html' %}
+
+{% block title %} Teacher Report {% endblock title %}
+
+{% block body %}
+
+    <form method="POST" action={% url 'teacher_report' %}>
+        {% csrf_token %}
+        <div class="search" style="margin-top: 50px">
+            <label for="date_from">Date From</label>
+            <input type="date" id="date_from" name="date_from" {% if date_from %}value="{{ date_from }}"{% endif %}>
+            <label for="date_to">Date To</label>
+            <input type="date" id="date_to" name="date_to" {% if date_to %}value="{{ date_to }}"{% endif %}>
+            <button type="submit" class="btn btn-primary" style="margin-left: 50px">Search</i></button>    
+        </div>
+    </form>
+    <br>
+
+    {% if search %}
+        <table class="table table-bordered table-striped" style="font-size: 13px">
+            <thead bgcolor="#212529" style="color: white">
+                <tr>
+                <td scope="col">Sr No</td>
+                <td scope="col">Teacher Name</td>
+                <td scope="col">Email</td>
+                <td scope="col">Check In</td>
+                <td scope="col">Check Out</td>
+                </tr>
+            </thead>
+            <tbody>
+                {% for obj in search %}
+                    <tr>
+                        <th scope="row">{{ forloop.counter }}</th>                    
+                        <td>{{ obj.teacher.teacher_name }}</td>
+                        <td>{{ obj.teacher.user.email }}</td>
+                        <td>{{ obj.checkin_time }}</td>
+                        <td>{{ obj.checkout_time }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="csv-btn">
+            <a href="{% url 'generate_teacher_csv' %}?pk={{ data_obj_pk }}"><button type="button" class="btn btn-primary">Download CSV</i></button> 
+        </div>
+    {% else %}
+        <div class="col-md-4"></div>
+        <img src="/media/images/no_data.jpg" alt="No data" width="400" height="400">
+    {% endif %}
+
+{% endblock body %}

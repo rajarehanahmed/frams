@@ -1,6 +1,6 @@
 {% autoescape off %} 
-    Welcome to FRAMS Login Hello
-    {{ email }}
+    Welcome to FRAMS Login, Hi
+    {{ name }}
     Please confirm your email by clicking on the following link. 
     Confirmation Link: http://{{ domain }}{% url 'active' uidb64=uid token=token %}
 {% endautoescape %}
