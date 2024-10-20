@@ -3,6 +3,7 @@ django-cleanup==8.0.0
 django-admin-interface==0.26.0
 psycopg==3.1.10
 opencv-python==4.10.0.84
+cmake==3.30.5
 face-recognition==1.3.0
 six==1.16.0
 email-validator==2.0.0.post2
