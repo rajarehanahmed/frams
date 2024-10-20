@@ -83,7 +83,7 @@ DATABASES = {
         'NAME': 'frams',
         'USER': os.getenv("POSTGRES_USER"),
         'PASSWORD': os.getenv("POSTGRES_PASS"),
-        'HOST': 'localhost',
+        'HOST': os.getenv("POSTGRES_HOST"),
         'PORT': '5437',
     }
 }
