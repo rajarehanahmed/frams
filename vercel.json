@@ -1,10 +1,22 @@
 {
-    "build": {
-        "env": {
-            "DJANGO_SETTINGS_MODULE": "frams.settings"
+    "version": 2,
+    "builds": [
+        {
+            "src": "frams/wsgi.py",
+            "use": "@vercel/python",
+            "config": {
+                "maxLambdaSize": "15mb",
+                "runtime": "python3.9"
+            }
         },
-        "cmd": "pip install -r requirements.txt && python manage.py collectstatic --noinput"
-    },
+        {
+            "src": "build_files.sh",
+            "use": "@vercel/static-build",
+            "config": {
+                "distDir": "ui/staticfiles"
+            }
+        }
+    ],
     "routes": [
         {
             "src": "/static/(.*)",
@@ -12,7 +24,7 @@
         },
         {
             "src": "/(.*)",
-            "dest": "index.html"
+            "dest": "frams/wsgi.py"
         }
     ]
 }
