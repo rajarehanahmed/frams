@@ -6,7 +6,7 @@
             "config": {
                 "maxLambdaSize": "15mb",
                 "runtime": "python3.9",
-                "buildCommand": "apt-get update && apt-get install -y cmake && pip install -r requirements.txt"
+                "buildCommand": "./build.sh"
             }
         }
     ],
