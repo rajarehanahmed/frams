@@ -1,0 +1,18 @@
+{
+    "build": {
+        "env": {
+            "DJANGO_SETTINGS_MODULE": "frams.settings"
+        },
+        "cmd": "pip install -r requirements.txt && python manage.py collectstatic --noinput"
+    },
+    "routes": [
+        {
+            "src": "/static/(.*)",
+            "dest": "/static/$1"
+        },
+        {
+            "src": "/(.*)",
+            "dest": "index.html"
+        }
+    ]
+}
