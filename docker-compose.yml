@@ -1,0 +1,42 @@
+services:
+  web:
+    build:
+      context: .
+      target: development
+    command: python manage.py runserver 0.0.0.0:8000
+    environment:
+      SECRET_KEY: ${SECRET_KEY:-django-insecure-local-docker-only-change-me}
+      DEBUG: "True"
+      POSTGRES_HOST: db
+      POSTGRES_DB: ${POSTGRES_DB:-frams}
+      POSTGRES_USER: ${POSTGRES_USER:-bloggenius}
+      POSTGRES_PASS: ${POSTGRES_PASSWORD:-bloggenius}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-bloggenius}
+      ALLOWED_HOSTS: localhost,127.0.0.1,0.0.0.0
+      EMAIL_USE_TLS: ${EMAIL_USE_TLS:-True}
+      EMAIL_HOST: ${EMAIL_HOST:-}
+      EMAIL_HOST_USER: ${EMAIL_HOST_USER:-}
+      EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD:-}
+      EMAIL_PORT: ${EMAIL_PORT:-587}
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+      - media:/app/media
+    depends_on:
+      - db
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-frams}
+      POSTGRES_USER: ${POSTGRES_USER:-bloggenius}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-bloggenius}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
+  media:

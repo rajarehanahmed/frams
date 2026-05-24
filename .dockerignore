@@ -1,0 +1,16 @@
+.git
+.venv
+venv
+env
+__pycache__
+.pycache
+*.pyc
+.pytest_cache
+.mypy_cache
+.coverage
+htmlcov
+.env
+db.sqlite3
+media
+staticfiles
+postgres_data
